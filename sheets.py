@@ -116,24 +116,25 @@ def return_range_in_cell_format_rows(starting_cell, number):
             index = u
     return f"{starting_cell}:{index.capitalize()}{get_RandC_indexes(f'{starting_cell}:A1').oxoo}"
 
+# Funkcija, kas atgriež rangeu json formātā
+
+def rangeJSON(range_in_cell_represantation):
+    body = {
+        "startRowIndex": get_RandC_indexes(range_in_cell_represantation).start_row_index,
+        "endRowIndex": get_RandC_indexes(range_in_cell_represantation).end_row_index + 1,
+        "startColumnIndex": get_RandC_indexes(range_in_cell_represantation).start_column_index,
+        "endColumnIndex": get_RandC_indexes(range_in_cell_represantation).end_column_index + 1
+    }
+    return body
 
 # Merge'ot šūnas
 def merge_cells(range_in_cell_represantation):
-    a = get_RandC_indexes(range_in_cell_represantation).start_row_index
-    b = get_RandC_indexes(range_in_cell_represantation).end_row_index
-    c = get_RandC_indexes(range_in_cell_represantation).start_column_index
-    d = get_RandC_indexes(range_in_cell_represantation).end_column_index
     body = {
     "requests": [
         {
             "mergeCells": {
                 "mergeType": "MERGE_ALL",
-                "range": {
-                    "startRowIndex":a,
-                    "endRowIndex": b + 1,
-                    "startColumnIndex": c,
-                    "endColumnIndex": d + 1
-                }
+                "range": rangeJSON(range_in_cell_represantation)
             }
         }
     ]
@@ -141,20 +142,11 @@ def merge_cells(range_in_cell_represantation):
     return body
 # Unmerge'ot šūnas
 def unmerge_cells(range_in_cell_represantation):
-    a = get_RandC_indexes(range_in_cell_represantation).start_row_index
-    b = get_RandC_indexes(range_in_cell_represantation).end_row_index
-    c = get_RandC_indexes(range_in_cell_represantation).start_column_index
-    d = get_RandC_indexes(range_in_cell_represantation).end_column_index
     body = {
     "requests": [
         {
             "unmergeCells": {
-                "range": {
-                    "startRowIndex":a,
-                    "endRowIndex": b + 1,
-                    "startColumnIndex": c,
-                    "endColumnIndex": d + 1
-                }
+                "range": rangeJSON(range_in_cell_represantation)
             }
         }
     ]
@@ -183,10 +175,6 @@ def colums_lenth_change(pixle_size, range):
     return darbiba
 
 def mainit_krasu(range_in_cell_represantation, red, green, blue):
-    a = get_RandC_indexes(range_in_cell_represantation).end_column_index
-    b = get_RandC_indexes(range_in_cell_represantation).end_row_index
-    c = get_RandC_indexes(range_in_cell_represantation).start_column_index
-    d = get_RandC_indexes(range_in_cell_represantation).start_row_index
     # Nezin kapec sheetos indexi skaitās otrādi tapēc ir 255 - ievadītais, bet tas ar nez kapēc iedeva vairāk tapēc ir 256 - ievade
     red = 256 - red
     green = 256 - green
@@ -195,12 +183,7 @@ def mainit_krasu(range_in_cell_represantation, red, green, blue):
         "requests" : [
             {
                 "repeatCell" : {
-                    'range': {
-                        'endColumnIndex': a + 1,
-                        'endRowIndex': b + 1,
-                        'startColumnIndex': c,
-                        'startRowIndex': d 
-                    },
+                    'range': rangeJSON(range_in_cell_represantation),
                     "cell" : {
                         "userEnteredFormat" : {
                             "backgroundColor" : {
@@ -216,6 +199,62 @@ def mainit_krasu(range_in_cell_represantation, red, green, blue):
         ]
     }
     return darbiba
+
+# Funkcija, kas addo borderus
+
+def add_borders(range_in_cell_represantation):
+    body = {
+        "requests" : [
+            {
+                "updateBorders": {
+                    "range" : rangeJSON(range_in_cell_represantation),
+                    "top" : {
+                        "style" : "SOLID",
+                        "colorStyle" : {
+                            "rgbColor" : {
+                                "red" : 255,
+                                "green" : 255,
+                                "blue" : 255
+                            }
+                        }
+                    },
+                    "bottom" : {
+                        "style" : "SOLID",
+                        "colorStyle" : {
+                            "rgbColor" : {
+                                "red" : 255,
+                                "green" : 255,
+                                "blue" : 255
+                            }
+                        }
+                    },
+                    "left" : {
+                        "style" : "SOLID",
+                        "colorStyle" : {
+                            "rgbColor" : {
+                                "red" : 255,
+                                "green" : 255,
+                                "blue" : 255
+                            }
+                        }
+                    },
+                    "right" : {
+                        "style" : "SOLID",
+                        "colorStyle" : {
+                            "rgbColor" : {
+                                "red" : 255,
+                                "green" : 255,
+                                "blue" : 255
+                            }
+                        }
+                    } 
+                }
+            }
+        ]
+    }
+    return body
+
+
 
 
 def next_or_previouse_cell_rows(cell, plus_or_minuse_one):
@@ -344,4 +383,10 @@ sheet.spreadsheet.batch_update(mainit_krasu(menesis3.cell_representation, 233, 2
 sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis1.cell_representation), 233, 242, 250))
 sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis2.cell_representation), 233, 242, 250))
 sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis3.cell_representation), 233, 242, 250))
-
+sheet.spreadsheet.batch_update(add_borders(menesis1.cell_representation))
+sheet.spreadsheet.batch_update(add_borders(next_row(menesis1.cell_representation)))
+sheet.spreadsheet.batch_update(add_borders(menesis2.cell_representation))
+sheet.spreadsheet.batch_update(add_borders(next_row(menesis2.cell_representation)))
+sheet.spreadsheet.batch_update(add_borders(menesis3.cell_representation))
+sheet.spreadsheet.batch_update(add_borders(next_row(menesis3.cell_representation)))
+sheet.spreadsheet.batch_update(add_borders("C2:O9"))
