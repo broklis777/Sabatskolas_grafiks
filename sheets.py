@@ -8,10 +8,10 @@ client = gspread.authorize(creds)
 sheet = client.open("Sabatskolas grafiks").sheet1
 # Ceturkņi, lai noteiktu kurš ir aktuālais ceturksnis
 ceturkshni = {
-    "1" : ["Decembris", "Janvāris", "Februāris"],
-    "2" : ["Marts", "Aprīlis", "Maijs"],
-    "3" : ["Jūnijs", "Jūlijs", "Augusts"],
-    "4" : ["Septembris", "Oktobris", "Novembris"],
+    "1" : ["Janvāris", "Februāris", "Marts"],
+    "2" : ["Aprīlis", "Maijs", "Jūnijs"],
+    "3" : ["Jūlijs", "Augusts", "Septembris"],
+    "4" : ["Oktobris", "Novembris", "Decembris"],
 }
 # Mēneši un to attiecīgie index'i 
 meneshi = {
@@ -83,6 +83,12 @@ def get_RandC_indexes(string):
                 burts1 += i
             else:
                 cipars1 += i
+    class Cell_Indexes:
+        def __init__ (self, start_column_index, end_column_index, start_row_index, end_row_index):
+            self.start_column_index = start_column_index
+            self.end_column_index = end_column_index
+            self.start_row_index = start_row_index
+            self.end_row_index = end_row_index
     class All_Indexes:
         def __init__(self, start_column_index, end_column_index, start_row_index, end_row_index, xooo, oxoo, ooxo, ooox):
             self.start_column_index = start_column_index
@@ -93,17 +99,33 @@ def get_RandC_indexes(string):
             self.oxoo = oxoo
             self.ooxo = ooxo
             self.ooox = ooox
-    start_column_index = 0
-    end_column_index = 0
-    start_row_index = int(cipars) - 1
-    end_row_index = int(cipars1) - 1
-    for i in alphabet:
-        if i == burts.lower():
-            start_column_index = alphabet[i]
-        elif i == burts1.lower():
-            end_column_index = alphabet[i]
-    vertibas = All_Indexes(start_column_index, end_column_index, start_row_index, end_row_index, burts, cipars, burts1, cipars1)
-    return vertibas
+    if cole == False: 
+        start_column_index = 0
+        end_column_index = 0
+        start_row_index = 0
+        end_row_index = 0
+        start_row_index = int(cipars) - 1 # Pilnībā nav ne jausmas kapēc
+        end_row_index = start_row_index # Tā būtu + 1 jo šūnas sākums ir [ bet beigas ) bet tā kā rangeJSON funkcija jau pieskaita +1 tad nelieku šeit
+        for u in alphabet:
+            if u == burts.lower():
+                start_column_index = alphabet[u]
+                break
+        end_column_index = start_column_index # Tā būtu + 1 jo šūnas sākums ir [ bet beigas ) bet tā kā rangeJSON funkcija jau pieskaita +1 tad nelieku šeit
+        vertibas = Cell_Indexes(start_column_index, end_column_index, start_row_index, end_row_index)
+        return vertibas
+    elif cole == True:
+        start_column_index = 0
+        end_column_index = 0
+        start_row_index = int(cipars) - 1
+        end_row_index = int(cipars1) - 1
+        for i in alphabet:
+            if i == burts.lower():
+                start_column_index = alphabet[i]
+            elif i == burts1.lower():
+                end_column_index = alphabet[i]
+        vertibas = All_Indexes(start_column_index, end_column_index, start_row_index, end_row_index, burts, cipars, burts1, cipars1)
+        return vertibas
+
 # Funkcija, kas palīdz iegūt šūnu range'u ja ir zināma sākuma šūna un tas cik collonas uz priekšu ir jāpieliek
 def return_range_in_cell_format_rows(starting_cell, number):
     index = get_RandC_indexes(f"{starting_cell}:A1").xooo.lower()
@@ -163,6 +185,26 @@ def colums_lenth_change(pixle_size, range):
                         "dimension" : "COLUMNS",
                         "startIndex" : get_RandC_indexes(range).start_column_index,
                         "endIndex" : get_RandC_indexes(range).end_column_index
+                    },
+                    "properties" : {
+                        "pixelSize" : pixle_size
+                    },
+                    "fields" : "pixelSize"
+                }
+            }
+        ]
+    }
+    return darbiba
+
+def rows_lenth_change(pixle_size, range):
+    darbiba = {
+        "requests" : [
+            {
+                "updateDimensionProperties" : {
+                    "range" : {
+                        "dimension" : "ROWS",
+                        "startIndex" : get_RandC_indexes(range).start_row_index,
+                        "endIndex" : get_RandC_indexes(range).end_row_index
                     },
                     "properties" : {
                         "pixelSize" : pixle_size
@@ -254,6 +296,56 @@ def add_borders(range_in_cell_represantation):
     }
     return body
 
+#Formatē šūnas tekstu
+def change_font(range_in_cell_represantation:str, font_name:str, font_size:int, bold:bool, italic:bool):
+    body = {
+        "requests" : [
+            {
+                "repeatCell" : {
+                    "range" : rangeJSON(range_in_cell_represantation),
+                    "cell" : {
+                        "userEnteredFormat" : {
+                            "textFormat" : {
+                                "fontFamily": font_name,
+                                "fontSize": font_size,
+                                "bold": bold,
+                                "italic": italic,
+                            }   
+                        }
+                    },
+                    "fields" : "userEnteredFormat(textFormat)"
+                }
+            }
+        ]
+    }
+    return body
+
+#Funkcija kas maina teksta krāsu
+def change_text_color(range_in_cell_represantation, red, green, blue):
+    body = {
+        "requests" : [
+            {
+                "repeatCell" : {
+                    "range" : rangeJSON(range_in_cell_represantation),
+                    "cell" : {
+                        "userEnteredFormat" : {
+                            "textFormat" : {
+                                "foregroundColorStyle" : {
+                                    "rgbColor" : {
+                                        "red" : red,
+                                        "green" : green,
+                                        "blue" : blue
+                                    }
+                                }
+                            }   
+                        }
+                    },
+                    "fields" : "userEnteredFormat(textFormat)"
+                }
+            }
+        ]
+    }
+    return body
 
 
 
@@ -306,6 +398,19 @@ def get_list_of_all_cells_from_range(range_in_cell_format):
 def next_row(range_in_cell_format):
     return f"{get_RandC_indexes(range_in_cell_format).xooo}{int(get_RandC_indexes(range_in_cell_format).oxoo) + 1}:{get_RandC_indexes(range_in_cell_format).ooxo}{int(get_RandC_indexes(range_in_cell_format).ooox) + 1}"
 
+# Vadītāju klase
+
+class Vaditaji:
+    def __init__(self, vards, epasts):
+        self.vards = vards
+        self.epasts = epasts
+
+vaditajs1 = Vaditaji("Luīze", "@")
+vaditajs2 = Vaditaji("Māris", "@")
+vaditajs3 = Vaditaji("Justs", "@")
+vaditajs4 = Vaditaji("Uldis", "@")
+vaditajs5 = Vaditaji("Henrijs", "@")
+vaditajs6 = Vaditaji("Sindija", "@")
 
 # Mēneša klase
 class Menesis:
@@ -363,30 +468,63 @@ for u in alphabet:
     if alphabet[u] == mainigaa_tabula:
         mainigaa_tabula = f"C2:{u.capitalize()}9" # Būs jāpiestrādā, kad uztaisīšu labāku funkciju, kas nosaka cik cilvēki vada Sabatskolu
 
+# Testa darbības ar tabulu, lai uztaisītu to tādu, kas izveidojas no jauna
+sheet.clear()
+# Izveido pirmo lodziņu kur rakstīts "Sabatskolas vadītāju grafiks"
+sheet.spreadsheet.batch_update(rows_lenth_change(33, "A1:A2")) 
+sheet.spreadsheet.batch_update(mainit_krasu("A1:E1", 255, 229, 153))
+sheet.spreadsheet.batch_update(merge_cells("A1:E1"))
+sheet.update_acell("A1:E1", "Sabatskolu vadītāju grafiks")
+sheet.format("A1:E1", {"textFormat": {
+      "foregroundColor": {
+        "red": 180.0,
+        "green": 180.0,
+        "blue": 180.0
+      },
+      "fontSize": 18,
+      "bold": True
+    }})
+sheet.spreadsheet.batch_update(add_borders("A1:E1"))
+# Vadītāju lodziņš
+sheet.spreadsheet.batch_update(merge_cells("A2:B3"))
+sheet.update_acell("A2:B3", "Vadītāji")
+sheet.format("A2:B3", {"horizontalAlignment": "CENTER",
+    "textFormat": {
+      "foregroundColor": {
+        "red": 170.0,
+        "green": 170.0,
+        "blue": 170.0
+      },
+      "fontSize": 12,
+      "bold": False
+      }})
+
+
 #Darbibas ar tabulu
-print(mainigaa_tabula)
-sheet.spreadsheet.batch_update(colums_lenth_change(100, "C2:T9"))
-sheet.spreadsheet.batch_update(unmerge_cells(mainigaa_tabula)) # Unmergo visu iepriekšējo tabulu
-sheet.spreadsheet.batch_update(colums_lenth_change(42, mainigaa_tabula))
-sheet.spreadsheet.batch_update(merge_cells(menesis1.cell_representation))
-sheet.update_acell(menesis1.cell_representation, menesis1.name)
-sheet.spreadsheet.batch_update(merge_cells(menesis2.cell_representation))
-sheet.update_acell(menesis2.cell_representation, menesis2.name)
-sheet.spreadsheet.batch_update(merge_cells(menesis3.cell_representation))
-sheet.update_acell(menesis3.cell_representation, menesis3.name)
-enter_values_for_range(menesis1.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis1.cell_representation)))
-enter_values_for_range(menesis2.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis2.cell_representation)))
-enter_values_for_range(menesis3.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis3.cell_representation)))
-sheet.spreadsheet.batch_update(mainit_krasu(menesis1.cell_representation, 233, 242, 250))
-sheet.spreadsheet.batch_update(mainit_krasu(menesis2.cell_representation, 233, 242, 250))
-sheet.spreadsheet.batch_update(mainit_krasu(menesis3.cell_representation, 233, 242, 250))
-sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis1.cell_representation), 233, 242, 250))
-sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis2.cell_representation), 233, 242, 250))
-sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis3.cell_representation), 233, 242, 250))
-sheet.spreadsheet.batch_update(add_borders(menesis1.cell_representation))
-sheet.spreadsheet.batch_update(add_borders(next_row(menesis1.cell_representation)))
-sheet.spreadsheet.batch_update(add_borders(menesis2.cell_representation))
-sheet.spreadsheet.batch_update(add_borders(next_row(menesis2.cell_representation)))
-sheet.spreadsheet.batch_update(add_borders(menesis3.cell_representation))
-sheet.spreadsheet.batch_update(add_borders(next_row(menesis3.cell_representation)))
-sheet.spreadsheet.batch_update(add_borders("C2:O9"))
+def tabula():
+    print(mainigaa_tabula)
+    sheet.spreadsheet.batch_update(colums_lenth_change(100, "C2:T9"))
+    sheet.spreadsheet.batch_update(unmerge_cells(mainigaa_tabula)) # Unmergo visu iepriekšējo tabulu
+    sheet.spreadsheet.batch_update(colums_lenth_change(42, mainigaa_tabula))
+    sheet.spreadsheet.batch_update(merge_cells(menesis1.cell_representation))
+    sheet.update_acell(menesis1.cell_representation, menesis1.name)
+    sheet.spreadsheet.batch_update(merge_cells(menesis2.cell_representation))
+    sheet.update_acell(menesis2.cell_representation, menesis2.name)
+    sheet.spreadsheet.batch_update(merge_cells(menesis3.cell_representation))
+    sheet.update_acell(menesis3.cell_representation, menesis3.name)
+    enter_values_for_range(menesis1.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis1.cell_representation)))
+    enter_values_for_range(menesis2.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis2.cell_representation)))
+    enter_values_for_range(menesis3.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis3.cell_representation)))
+    sheet.spreadsheet.batch_update(mainit_krasu(menesis1.cell_representation, 233, 242, 250))
+    sheet.spreadsheet.batch_update(mainit_krasu(menesis2.cell_representation, 233, 242, 250))
+    sheet.spreadsheet.batch_update(mainit_krasu(menesis3.cell_representation, 233, 242, 250))
+    sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis1.cell_representation), 233, 242, 250))
+    sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis2.cell_representation), 233, 242, 250))
+    sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis3.cell_representation), 233, 242, 250))
+    sheet.spreadsheet.batch_update(add_borders(menesis1.cell_representation))
+    sheet.spreadsheet.batch_update(add_borders(next_row(menesis1.cell_representation)))
+    sheet.spreadsheet.batch_update(add_borders(menesis2.cell_representation))
+    sheet.spreadsheet.batch_update(add_borders(next_row(menesis2.cell_representation)))
+    sheet.spreadsheet.batch_update(add_borders(menesis3.cell_representation))
+    sheet.spreadsheet.batch_update(add_borders(next_row(menesis3.cell_representation)))
+
