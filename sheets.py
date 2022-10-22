@@ -372,6 +372,12 @@ def return_an_key_from_value_of_dictionary(dictionary, value):
     for n in dictionary:
         if dictionary[n] == value:
             return n
+def return_index_from_value_of_list(list, value):
+    index = 0
+    for i in list:
+        if i == value:
+            return index
+        index += 1
 
 def get_list_of_all_cells_from_range(range_in_cell_format):
     list_of_cells = []
@@ -399,19 +405,25 @@ def next_row(range_in_cell_format):
     return f"{get_RandC_indexes(range_in_cell_format).xooo}{int(get_RandC_indexes(range_in_cell_format).oxoo) + 1}:{get_RandC_indexes(range_in_cell_format).ooxo}{int(get_RandC_indexes(range_in_cell_format).ooox) + 1}"
 
 # Vadītāju klase
-
 class Vaditaji:
     def __init__(self, vards, epasts):
         self.vards = vards
         self.epasts = epasts
-
+sabatskolas_vaditaji = []
 vaditajs1 = Vaditaji("Luīze", "@")
 vaditajs2 = Vaditaji("Māris", "@")
 vaditajs3 = Vaditaji("Justs", "@")
 vaditajs4 = Vaditaji("Uldis", "@")
 vaditajs5 = Vaditaji("Henrijs", "@")
 vaditajs6 = Vaditaji("Sindija", "@")
-
+vaditajs7 = Vaditaji("Anastasija", "@")
+sabatskolas_vaditaji.append(vaditajs1)
+sabatskolas_vaditaji.append(vaditajs2)
+sabatskolas_vaditaji.append(vaditajs3)
+sabatskolas_vaditaji.append(vaditajs4)
+sabatskolas_vaditaji.append(vaditajs5)
+sabatskolas_vaditaji.append(vaditajs6)
+sabatskolas_vaditaji.append(vaditajs7)
 # Mēneša klase
 class Menesis:
     def __init__(self, name, all_days):
@@ -452,6 +464,7 @@ for menesis_key in meneshi:
 def enter_values_for_range (values, cells):
     u = 0
     while u < len(values):
+        print(f"cells[u] = {cells[u]}, values[u] = {values[u]}")
         sheet.update_acell(cells[u], values[u])
         u += 1
 menesis1 = Menesis(ceturkshni[aktualais_ceturksnis][0], calendar.monthcalendar(year, pirma_menesha_index))
@@ -466,7 +479,7 @@ menesis3.cell_representation = return_range_in_cell_format_rows(next_or_previous
 mainigaa_tabula = alphabet["c"] + menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths
 for u in alphabet:
     if alphabet[u] == mainigaa_tabula:
-        mainigaa_tabula = f"C2:{u.capitalize()}9" # Būs jāpiestrādā, kad uztaisīšu labāku funkciju, kas nosaka cik cilvēki vada Sabatskolu
+        mainigaa_tabula = f"C2:{u.capitalize()}{3 + len(sabatskolas_vaditaji)}" # Būs jāpiestrādā, kad uztaisīšu labāku funkciju, kas nosaka cik cilvēki vada Sabatskolu
 
 # Testa darbības ar tabulu, lai uztaisītu to tādu, kas izveidojas no jauna
 sheet.clear()
@@ -503,28 +516,41 @@ sheet.format("A2:B3", {"horizontalAlignment": "CENTER",
 #Darbibas ar tabulu
 def tabula():
     print(mainigaa_tabula)
-    sheet.spreadsheet.batch_update(colums_lenth_change(100, "C2:T9"))
+    sheet.spreadsheet.batch_update(colums_lenth_change(100, "C2:T9")) # Uzliek kollonas normālajā izmērā
     sheet.spreadsheet.batch_update(unmerge_cells(mainigaa_tabula)) # Unmergo visu iepriekšējo tabulu
-    sheet.spreadsheet.batch_update(colums_lenth_change(42, mainigaa_tabula))
+    sheet.spreadsheet.batch_update(colums_lenth_change(42, mainigaa_tabula)) # Maina visus kollonu iestatījumus lai izskatītos vairāk kā kvadrāti
+    # Apvieno 1mā mēneša sūnas kā arī ievada tā vārdu, ievada nākamajā rowā Sabatu datumus, nomaina lodziņu krāsas un uzliek borderus
     sheet.spreadsheet.batch_update(merge_cells(menesis1.cell_representation))
     sheet.update_acell(menesis1.cell_representation, menesis1.name)
-    sheet.spreadsheet.batch_update(merge_cells(menesis2.cell_representation))
-    sheet.update_acell(menesis2.cell_representation, menesis2.name)
-    sheet.spreadsheet.batch_update(merge_cells(menesis3.cell_representation))
-    sheet.update_acell(menesis3.cell_representation, menesis3.name)
     enter_values_for_range(menesis1.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis1.cell_representation)))
-    enter_values_for_range(menesis2.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis2.cell_representation)))
-    enter_values_for_range(menesis3.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis3.cell_representation)))
     sheet.spreadsheet.batch_update(mainit_krasu(menesis1.cell_representation, 233, 242, 250))
-    sheet.spreadsheet.batch_update(mainit_krasu(menesis2.cell_representation, 233, 242, 250))
-    sheet.spreadsheet.batch_update(mainit_krasu(menesis3.cell_representation, 233, 242, 250))
     sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis1.cell_representation), 233, 242, 250))
-    sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis2.cell_representation), 233, 242, 250))
-    sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis3.cell_representation), 233, 242, 250))
     sheet.spreadsheet.batch_update(add_borders(menesis1.cell_representation))
     sheet.spreadsheet.batch_update(add_borders(next_row(menesis1.cell_representation)))
+    # Apvieno 2rā mēneša sūnas kā arī ievada tā vārdu, ievada nākamajā rowā Sabatu datumus, nomaina lodziņu krāsas un uzliek borderus
+    sheet.spreadsheet.batch_update(merge_cells(menesis2.cell_representation))
+    sheet.update_acell(menesis2.cell_representation, menesis2.name)
+    enter_values_for_range(menesis2.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis2.cell_representation)))
+    sheet.spreadsheet.batch_update(mainit_krasu(menesis2.cell_representation, 233, 242, 250))
+    sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis2.cell_representation), 233, 242, 250))
     sheet.spreadsheet.batch_update(add_borders(menesis2.cell_representation))
     sheet.spreadsheet.batch_update(add_borders(next_row(menesis2.cell_representation)))
+    # Apvieno 3šā mēneša sūnas kā arī ievada tā vārdu, ievada nākamajā rowā Sabatu datumus, nomaina lodziņu krāsas un uzliek borderus
+    sheet.spreadsheet.batch_update(merge_cells(menesis3.cell_representation))
+    sheet.update_acell(menesis3.cell_representation, menesis3.name)
+    enter_values_for_range(menesis3.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis3.cell_representation)))
+    sheet.spreadsheet.batch_update(mainit_krasu(menesis3.cell_representation, 233, 242, 250))
+    sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis3.cell_representation), 233, 242, 250))
     sheet.spreadsheet.batch_update(add_borders(menesis3.cell_representation))
     sheet.spreadsheet.batch_update(add_borders(next_row(menesis3.cell_representation)))
+    # Ievada vadītājus
+    j = 0
+    while j < len(sabatskolas_vaditaji):
+        enter_values_for_range([sabatskolas_vaditaji[j].vards], [f"A{j + 4}:B{j + 4}"])
+        j += 1
+ 
+tabula()
 
+
+#Izveidot tablu no jauna
+#Mainīgā līnija
