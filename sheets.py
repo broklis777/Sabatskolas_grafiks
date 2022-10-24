@@ -347,14 +347,11 @@ def change_text_color(range_in_cell_represantation, red, green, blue):
     }
     return body
 
-
-
 def next_or_previouse_cell_rows(cell, plus_or_minuse_one):
     letter = ""
     if plus_or_minuse_one[0] == "+":
         for i in alphabet:
             if cell[0].lower() == i:
-                #print(f"letter:{letter} = alphabet[i]:{alphabet[i]} alphabet[i] + 1 : {alphabet[i] + 1}    alphabet[alphabet[i] + 1] : {alphabet[alphabet[i] + 1]}")
                 letter = alphabet[i] + 1
                 for u in alphabet:
                     if alphabet[u] == letter:
@@ -474,7 +471,6 @@ menesis1.cell_representation = return_range_in_cell_format_rows("C2", menesis1.n
 menesis2.cell_representation = return_range_in_cell_format_rows(next_or_previouse_cell_rows(menesis1.cell_representation[3] + menesis1.cell_representation[4], "+1"), menesis2.number_of_sabaths)
 menesis3.cell_representation = return_range_in_cell_format_rows(next_or_previouse_cell_rows(menesis2.cell_representation[3] + menesis2.cell_representation[4], "+1"), menesis3.number_of_sabaths)
 
-
 # Iegūst mainīgo tabulu, kur tiks ievadītas vērtības
 mainigaa_tabula = alphabet["c"] + menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths
 for u in alphabet:
@@ -500,8 +496,11 @@ sheet.format("A1:E1", {"textFormat": {
 sheet.spreadsheet.batch_update(add_borders("A1:E1"))
 # Vadītāju lodziņš
 sheet.spreadsheet.batch_update(merge_cells("A2:B3"))
+sheet.spreadsheet.batch_update(add_borders("A2:B3"))
+sheet.spreadsheet.batch_update(mainit_krasu("A2:B3", 162, 196, 201))
 sheet.update_acell("A2:B3", "Vadītāji")
 sheet.format("A2:B3", {"horizontalAlignment": "CENTER",
+    "verticalAlignment": "MIDDLE",
     "textFormat": {
       "foregroundColor": {
         "red": 170.0,
@@ -511,7 +510,6 @@ sheet.format("A2:B3", {"horizontalAlignment": "CENTER",
       "fontSize": 12,
       "bold": False
       }})
-
 
 #Darbibas ar tabulu
 def tabula():
@@ -543,14 +541,21 @@ def tabula():
     sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis3.cell_representation), 233, 242, 250))
     sheet.spreadsheet.batch_update(add_borders(menesis3.cell_representation))
     sheet.spreadsheet.batch_update(add_borders(next_row(menesis3.cell_representation)))
+    # Uzzīmē borderus menešu lauciņiem
+    sheet.spreadsheet.batch_update(add_borders(f"{get_RandC_indexes(menesis1.cell_representation).xooo}{get_RandC_indexes(menesis1.cell_representation).oxoo}:{get_RandC_indexes(menesis1.cell_representation).ooxo}{int(get_RandC_indexes(menesis1.cell_representation).ooox) + 1 + len(sabatskolas_vaditaji)}"))
+    sheet.spreadsheet.batch_update(add_borders(f"{get_RandC_indexes(menesis2.cell_representation).xooo}{get_RandC_indexes(menesis2.cell_representation).oxoo}:{get_RandC_indexes(menesis2.cell_representation).ooxo}{int(get_RandC_indexes(menesis2.cell_representation).ooox) + 1 + len(sabatskolas_vaditaji)}"))
+    sheet.spreadsheet.batch_update(add_borders(f"{get_RandC_indexes(menesis3.cell_representation).xooo}{get_RandC_indexes(menesis3.cell_representation).oxoo}:{get_RandC_indexes(menesis3.cell_representation).ooxo}{int(get_RandC_indexes(menesis3.cell_representation).ooox) + 1 + len(sabatskolas_vaditaji)}"))
     # Ievada vadītājus
+    time.sleep(60) #Bišķ jāuzgaida, jo savādāk pārsniedz quota limitu
     j = 0
     while j < len(sabatskolas_vaditaji):
+        sheet.spreadsheet.batch_update(merge_cells(f"A{j + 4}:B{j + 4}"))
+        sheet.spreadsheet.batch_update(mainit_krasu(f"A{j + 4}:B{j + 4}", 233, 242, 250))
+        sheet.format(f"A{j + 4}:B{j + 4}", {"horizontalAlignment": "CENTER"})
+        sheet.spreadsheet.batch_update(add_borders(f"A{j + 4}:B{j + 4}"))
         enter_values_for_range([sabatskolas_vaditaji[j].vards], [f"A{j + 4}:B{j + 4}"])
         j += 1
  
 tabula()
 
-
-#Izveidot tablu no jauna
 #Mainīgā līnija
