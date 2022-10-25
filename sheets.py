@@ -1,3 +1,4 @@
+from datetime import date
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import calendar
@@ -246,14 +247,18 @@ def mainit_krasu(range_in_cell_represantation, red, green, blue):
 
 # Funkcija, kas addo borderus
 
-def add_borders(range_in_cell_represantation):
+def add_borders(range_in_cell_represantation, add_or_remove):
+    if add_or_remove == "+":
+        a = "SOLID"
+    elif add_or_remove == "-":
+        a = "NONE"
     body = {
         "requests" : [
             {
                 "updateBorders": {
                     "range" : rangeJSON(range_in_cell_represantation),
                     "top" : {
-                        "style" : "SOLID",
+                        "style" : a,
                         "colorStyle" : {
                             "rgbColor" : {
                                 "red" : 255,
@@ -263,7 +268,7 @@ def add_borders(range_in_cell_represantation):
                         }
                     },
                     "bottom" : {
-                        "style" : "SOLID",
+                        "style" : a,
                         "colorStyle" : {
                             "rgbColor" : {
                                 "red" : 255,
@@ -273,7 +278,7 @@ def add_borders(range_in_cell_represantation):
                         }
                     },
                     "left" : {
-                        "style" : "SOLID",
+                        "style" : a,
                         "colorStyle" : {
                             "rgbColor" : {
                                 "red" : 255,
@@ -283,7 +288,7 @@ def add_borders(range_in_cell_represantation):
                         }
                     },
                     "right" : {
-                        "style" : "SOLID",
+                        "style" : a,
                         "colorStyle" : {
                             "rgbColor" : {
                                 "red" : 255,
@@ -483,42 +488,56 @@ for u in alphabet:
         mainigaa_tabula = f"C2:{u.capitalize()}{3 + len(sabatskolas_vaditaji)}" # Būs jāpiestrādā, kad uztaisīšu labāku funkciju, kas nosaka cik cilvēki vada Sabatskolu
 
 # Testa darbības ar tabulu, lai uztaisītu to tādu, kas izveidojas no jauna
-#sheet.clear()
-# Izveido pirmo lodziņu kur rakstīts "Sabatskolas vadītāju grafiks"
-sheet.spreadsheet.batch_update(rows_lenth_change(33, "A1:A2")) 
-sheet.spreadsheet.batch_update(mainit_krasu("A1:E1", 255, 229, 153))
-sheet.spreadsheet.batch_update(merge_cells("A1:E1"))
-sheet.update_acell("A1:E1", "Sabatskolu vadītāju grafiks")
-sheet.format("A1:E1", {"textFormat": {
+# Nodzēst pilnībā visu
+def clear_all():
+    sheet.spreadsheet.batch_update(merge_cells("A1:W30"))
+    sheet.spreadsheet.batch_update(mainit_krasu("A1:W30", 255, 255, 255))
+    sheet.format("A1:W30", {"textFormat": {
       "foregroundColor": {
-        "red": 180.0,
-        "green": 180.0,
-        "blue": 180.0
+        "red": 0.0,
+        "green": 0.0,
+        "blue": 0.0
       },
-      "fontSize": 18,
-      "bold": True
-    }})
-sheet.spreadsheet.batch_update(add_borders("A1:E1"))
-# Vadītāju lodziņš
-sheet.spreadsheet.batch_update(merge_cells("A2:B3"))
-sheet.spreadsheet.batch_update(add_borders("A2:B3"))
-sheet.spreadsheet.batch_update(mainit_krasu("A2:B3", 162, 196, 201))
-sheet.update_acell("A2:B3", "Vadītāji")
-sheet.format("A2:B3", {"horizontalAlignment": "CENTER",
-    "verticalAlignment": "MIDDLE",
-    "textFormat": {
-      "foregroundColor": {
-        "red": 170.0,
-        "green": 170.0,
-        "blue": 170.0
-      },
-      "fontSize": 12,
+      "fontSize": 10,
       "bold": False
-      }})
+    }})
+    sheet.spreadsheet.batch_update(add_borders("A1:W30", "-"))
+    sheet.spreadsheet.batch_update(unmerge_cells("A1:W30"))
+    sheet.clear()
 
 #Darbibas ar tabulu
 def tabula():
-    print(mainigaa_tabula)
+    # Izveido pirmo lodziņu kur rakstīts "Sabatskolas vadītāju grafiks"
+    sheet.spreadsheet.batch_update(rows_lenth_change(33, "A1:A2")) 
+    sheet.spreadsheet.batch_update(mainit_krasu("A1:E1", 255, 229, 153))
+    sheet.spreadsheet.batch_update(merge_cells("A1:E1"))
+    sheet.update_acell("A1:E1", "Sabatskolu vadītāju grafiks")
+    sheet.format("A1:E1", {"textFormat": {
+        "foregroundColor": {
+            "red": 180.0,
+            "green": 180.0,
+            "blue": 180.0
+        },
+        "fontSize": 18,
+        "bold": True
+        }})
+    sheet.spreadsheet.batch_update(add_borders("A1:E1", "+"))
+    # Vadītāju lodziņš
+    sheet.spreadsheet.batch_update(merge_cells("A2:B3"))
+    sheet.spreadsheet.batch_update(add_borders("A2:B3", "+"))
+    sheet.spreadsheet.batch_update(mainit_krasu("A2:B3", 162, 196, 201))
+    sheet.update_acell("A2:B3", "Vadītāji")
+    sheet.format("A2:B3", {"horizontalAlignment": "CENTER",
+        "verticalAlignment": "MIDDLE",
+        "textFormat": {
+        "foregroundColor": {
+            "red": 170.0,
+            "green": 170.0,
+            "blue": 170.0
+        },
+        "fontSize": 12,
+        "bold": False
+        }})
     sheet.spreadsheet.batch_update(colums_lenth_change(100, "C2:T9")) # Uzliek kollonas normālajā izmērā
     sheet.spreadsheet.batch_update(unmerge_cells(mainigaa_tabula)) # Unmergo visu iepriekšējo tabulu
     sheet.spreadsheet.batch_update(colums_lenth_change(42, mainigaa_tabula)) # Maina visus kollonu iestatījumus lai izskatītos vairāk kā kvadrāti
@@ -528,28 +547,28 @@ def tabula():
     enter_values_for_range(menesis1.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis1.cell_representation)))
     sheet.spreadsheet.batch_update(mainit_krasu(menesis1.cell_representation, 233, 242, 250))
     sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis1.cell_representation), 233, 242, 250))
-    sheet.spreadsheet.batch_update(add_borders(menesis1.cell_representation))
-    sheet.spreadsheet.batch_update(add_borders(next_row(menesis1.cell_representation)))
+    sheet.spreadsheet.batch_update(add_borders(menesis1.cell_representation, "+"))
+    sheet.spreadsheet.batch_update(add_borders(next_row(menesis1.cell_representation), "+"))
     # Apvieno 2rā mēneša sūnas kā arī ievada tā vārdu, ievada nākamajā rowā Sabatu datumus, nomaina lodziņu krāsas un uzliek borderus
     sheet.spreadsheet.batch_update(merge_cells(menesis2.cell_representation))
     sheet.update_acell(menesis2.cell_representation, menesis2.name)
     enter_values_for_range(menesis2.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis2.cell_representation)))
     sheet.spreadsheet.batch_update(mainit_krasu(menesis2.cell_representation, 233, 242, 250))
     sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis2.cell_representation), 233, 242, 250))
-    sheet.spreadsheet.batch_update(add_borders(menesis2.cell_representation))
-    sheet.spreadsheet.batch_update(add_borders(next_row(menesis2.cell_representation)))
+    sheet.spreadsheet.batch_update(add_borders(menesis2.cell_representation, "+"))
+    sheet.spreadsheet.batch_update(add_borders(next_row(menesis2.cell_representation), "+"))
     # Apvieno 3šā mēneša sūnas kā arī ievada tā vārdu, ievada nākamajā rowā Sabatu datumus, nomaina lodziņu krāsas un uzliek borderus
     sheet.spreadsheet.batch_update(merge_cells(menesis3.cell_representation))
     sheet.update_acell(menesis3.cell_representation, menesis3.name)
     enter_values_for_range(menesis3.all_sabaths, get_list_of_all_cells_from_range(next_row(menesis3.cell_representation)))
     sheet.spreadsheet.batch_update(mainit_krasu(menesis3.cell_representation, 233, 242, 250))
     sheet.spreadsheet.batch_update(mainit_krasu(next_row(menesis3.cell_representation), 233, 242, 250))
-    sheet.spreadsheet.batch_update(add_borders(menesis3.cell_representation))
-    sheet.spreadsheet.batch_update(add_borders(next_row(menesis3.cell_representation)))
+    sheet.spreadsheet.batch_update(add_borders(menesis3.cell_representation, "+"))
+    sheet.spreadsheet.batch_update(add_borders(next_row(menesis3.cell_representation), "+"))
     # Uzzīmē borderus menešu lauciņiem
-    sheet.spreadsheet.batch_update(add_borders(f"{get_RandC_indexes(menesis1.cell_representation).xooo}{get_RandC_indexes(menesis1.cell_representation).oxoo}:{get_RandC_indexes(menesis1.cell_representation).ooxo}{int(get_RandC_indexes(menesis1.cell_representation).ooox) + 1 + len(sabatskolas_vaditaji)}"))
-    sheet.spreadsheet.batch_update(add_borders(f"{get_RandC_indexes(menesis2.cell_representation).xooo}{get_RandC_indexes(menesis2.cell_representation).oxoo}:{get_RandC_indexes(menesis2.cell_representation).ooxo}{int(get_RandC_indexes(menesis2.cell_representation).ooox) + 1 + len(sabatskolas_vaditaji)}"))
-    sheet.spreadsheet.batch_update(add_borders(f"{get_RandC_indexes(menesis3.cell_representation).xooo}{get_RandC_indexes(menesis3.cell_representation).oxoo}:{get_RandC_indexes(menesis3.cell_representation).ooxo}{int(get_RandC_indexes(menesis3.cell_representation).ooox) + 1 + len(sabatskolas_vaditaji)}"))
+    sheet.spreadsheet.batch_update(add_borders(f"{get_RandC_indexes(menesis1.cell_representation).xooo}{get_RandC_indexes(menesis1.cell_representation).oxoo}:{get_RandC_indexes(menesis1.cell_representation).ooxo}{int(get_RandC_indexes(menesis1.cell_representation).ooox) + 1 + len(sabatskolas_vaditaji)}", "+"))
+    sheet.spreadsheet.batch_update(add_borders(f"{get_RandC_indexes(menesis2.cell_representation).xooo}{get_RandC_indexes(menesis2.cell_representation).oxoo}:{get_RandC_indexes(menesis2.cell_representation).ooxo}{int(get_RandC_indexes(menesis2.cell_representation).ooox) + 1 + len(sabatskolas_vaditaji)}", "+"))
+    sheet.spreadsheet.batch_update(add_borders(f"{get_RandC_indexes(menesis3.cell_representation).xooo}{get_RandC_indexes(menesis3.cell_representation).oxoo}:{get_RandC_indexes(menesis3.cell_representation).ooxo}{int(get_RandC_indexes(menesis3.cell_representation).ooox) + 1 + len(sabatskolas_vaditaji)}", "+"))
     # Ievada vadītājus
     time.sleep(60) #Bišķ jāuzgaida, jo savādāk pārsniedz quota limitu
     j = 0
@@ -557,9 +576,30 @@ def tabula():
         sheet.spreadsheet.batch_update(merge_cells(f"A{j + 4}:B{j + 4}"))
         sheet.spreadsheet.batch_update(mainit_krasu(f"A{j + 4}:B{j + 4}", 233, 242, 250))
         sheet.format(f"A{j + 4}:B{j + 4}", {"horizontalAlignment": "CENTER"})
-        sheet.spreadsheet.batch_update(add_borders(f"A{j + 4}:B{j + 4}"))
+        sheet.spreadsheet.batch_update(add_borders(f"A{j + 4}:B{j + 4}", "+"))
         enter_values_for_range([sabatskolas_vaditaji[j].vards], [f"A{j + 4}:B{j + 4}"])
         j += 1
+
+# Linijas klase
+class Line:
+    def __init__(self, cells):
+        self.locationX = locationX = "T10" # Mazums gadās kļūda
+        self.cells = cells
+        self.datums = cells[0]
+        cells.pop(0)
+        self.vaditaja_vards = vaditaja_vards = ""
+        for h in cells:
+            variable = sheet.get_values(h)
+            if len(variable) != 0:
+                self.locationX = h
+        self.vaditaja_vards = f"A{get_RandC_indexes(self.locationX).ox}:B{get_RandC_indexes(self.locationX).ox}"
+    def colorize(self):
+        for o in self.cells:
+            sheet.spreadsheet.batch_update(mainit_krasu(o, 217, 234, 211))
+        sheet.spreadsheet.batch_update(mainit_krasu(self.locationX, 182, 215, 168))
+        sheet.spreadsheet.batch_update(mainit_krasu(self.datums, 182, 215, 168))
+        print(self.vaditaja_vards)
+        sheet.spreadsheet.batch_update(mainit_krasu(self.vaditaja_vards, 182, 215, 168))
 
 # Mainīgā līnija
 def mainiga_linija(current_day, current_month):
@@ -579,9 +619,14 @@ def mainiga_linija(current_day, current_month):
     for k in sabati: 
         if k > current_day:
             index = return_index_from_value_of_list(sabati, k)
-
-    #print(f"{range_[index]}:{get_RandC_indexes(range_[index]).xo}{int(get_RandC_indexes(range_[index]).ox) + len(sabatskolas_vaditaji)}")
     linijas_shunas = get_list_of_all_cells_from_range(f"{range_[index]}:{get_RandC_indexes(range_[index]).xo}{int(get_RandC_indexes(range_[index]).ox) + len(sabatskolas_vaditaji)}")
-    print(linijas_shunas)
+    linija = Line(linijas_shunas)
+    return linija
+  
 
-mainiga_linija(day, month)
+
+clear_all()
+tabula()
+mainiga_linija(day, month).colorize()
+
+
