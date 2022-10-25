@@ -84,11 +84,13 @@ def get_RandC_indexes(string):
             else:
                 cipars1 += i
     class Cell_Indexes:
-        def __init__ (self, start_column_index, end_column_index, start_row_index, end_row_index):
+        def __init__ (self, start_column_index, end_column_index, start_row_index, end_row_index, xo, ox):
             self.start_column_index = start_column_index
             self.end_column_index = end_column_index
             self.start_row_index = start_row_index
             self.end_row_index = end_row_index
+            self.xo = xo
+            self.ox = ox
     class All_Indexes:
         def __init__(self, start_column_index, end_column_index, start_row_index, end_row_index, xooo, oxoo, ooxo, ooox):
             self.start_column_index = start_column_index
@@ -111,7 +113,7 @@ def get_RandC_indexes(string):
                 start_column_index = alphabet[u]
                 break
         end_column_index = start_column_index # Tā būtu + 1 jo šūnas sākums ir [ bet beigas ) bet tā kā rangeJSON funkcija jau pieskaita +1 tad nelieku šeit
-        vertibas = Cell_Indexes(start_column_index, end_column_index, start_row_index, end_row_index)
+        vertibas = Cell_Indexes(start_column_index, end_column_index, start_row_index, end_row_index, burts, cipars)
         return vertibas
     elif cole == True:
         start_column_index = 0
@@ -388,8 +390,11 @@ def get_list_of_all_cells_from_range(range_in_cell_format):
     for i in alphabet:
         if i == column.lower():
             starting_index = alphabet[i]
-        elif i == column1.lower():
-            ending_index = alphabet[i]
+        #elif i == column1.lower():
+            #ending_index = alphabet[i]
+    for u in alphabet:
+        if u == column1.lower():
+            ending_index = alphabet[u]
     while starting_index < ending_index + 1:
         row = original_row_value
         while row < row1 + 1:
@@ -478,7 +483,7 @@ for u in alphabet:
         mainigaa_tabula = f"C2:{u.capitalize()}{3 + len(sabatskolas_vaditaji)}" # Būs jāpiestrādā, kad uztaisīšu labāku funkciju, kas nosaka cik cilvēki vada Sabatskolu
 
 # Testa darbības ar tabulu, lai uztaisītu to tādu, kas izveidojas no jauna
-sheet.clear()
+#sheet.clear()
 # Izveido pirmo lodziņu kur rakstīts "Sabatskolas vadītāju grafiks"
 sheet.spreadsheet.batch_update(rows_lenth_change(33, "A1:A2")) 
 sheet.spreadsheet.batch_update(mainit_krasu("A1:E1", 255, 229, 153))
@@ -555,7 +560,28 @@ def tabula():
         sheet.spreadsheet.batch_update(add_borders(f"A{j + 4}:B{j + 4}"))
         enter_values_for_range([sabatskolas_vaditaji[j].vards], [f"A{j + 4}:B{j + 4}"])
         j += 1
- 
-tabula()
 
-#Mainīgā līnija
+# Mainīgā līnija
+def mainiga_linija(current_day, current_month):
+    linijas_shunas = []
+    sabati = []
+    range_ = []
+    index = 0
+    if current_month == pirma_menesha_index:
+        sabati = menesis1.all_sabaths
+        range_ = get_list_of_all_cells_from_range(next_row(menesis1.cell_representation))
+    elif current_month == otraa_menesha_index:
+        sabati = menesis2.all_sabaths
+        range_ = get_list_of_all_cells_from_range(next_row(menesis2.cell_representation))
+    elif current_month == tresha_menesha_index:
+        sabati = menesis3.all_sabaths
+        range_ = get_list_of_all_cells_from_range(next_row(menesis3.cell_representation))
+    for k in sabati: 
+        if k > current_day:
+            index = return_index_from_value_of_list(sabati, k)
+
+    #print(f"{range_[index]}:{get_RandC_indexes(range_[index]).xo}{int(get_RandC_indexes(range_[index]).ox) + len(sabatskolas_vaditaji)}")
+    linijas_shunas = get_list_of_all_cells_from_range(f"{range_[index]}:{get_RandC_indexes(range_[index]).xo}{int(get_RandC_indexes(range_[index]).ox) + len(sabatskolas_vaditaji)}")
+    print(linijas_shunas)
+
+mainiga_linija(day, month)
