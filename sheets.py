@@ -487,19 +487,21 @@ for u in alphabet:
     if alphabet[u] == mainigaa_tabula:
         mainigaa_tabula = f"C2:{u.capitalize()}{3 + len(sabatskolas_vaditaji)}" # Būs jāpiestrādā, kad uztaisīšu labāku funkciju, kas nosaka cik cilvēki vada Sabatskolu
 
-# Testa darbības ar tabulu, lai uztaisītu to tādu, kas izveidojas no jauna
+# Darbības ar tabulu, lai uztaisītu to tādu, kas izveidojas no jauna
 # Nodzēst pilnībā visu
 def clear_all():
     sheet.spreadsheet.batch_update(merge_cells("A1:W30"))
     sheet.spreadsheet.batch_update(mainit_krasu("A1:W30", 255, 255, 255))
-    sheet.format("A1:W30", {"textFormat": {
-      "foregroundColor": {
-        "red": 0.0,
-        "green": 0.0,
-        "blue": 0.0
-      },
-      "fontSize": 10,
-      "bold": False
+    sheet.format("A1:W30", {
+        "horizontalAlignment": "CENTER",
+        "textFormat": {
+        "foregroundColor": {
+            "red": 0.0,
+            "green": 0.0,
+            "blue": 0.0
+        },
+        "fontSize": 10,
+        "bold": False
     }})
     sheet.spreadsheet.batch_update(add_borders("A1:W30", "-"))
     sheet.spreadsheet.batch_update(unmerge_cells("A1:W30"))
@@ -590,6 +592,7 @@ class Line:
         self.vaditaja_vards = vaditaja_vards = ""
         for h in cells:
             variable = sheet.get_values(h)
+            print(f"var == {variable}, len(var) == {len(variable)}")
             if len(variable) != 0:
                 self.locationX = h
         self.vaditaja_vards = f"A{get_RandC_indexes(self.locationX).ox}:B{get_RandC_indexes(self.locationX).ox}"
@@ -598,7 +601,7 @@ class Line:
             sheet.spreadsheet.batch_update(mainit_krasu(o, 217, 234, 211))
         sheet.spreadsheet.batch_update(mainit_krasu(self.locationX, 182, 215, 168))
         sheet.spreadsheet.batch_update(mainit_krasu(self.datums, 182, 215, 168))
-        print(self.vaditaja_vards)
+        #print(f"{self.vaditaja_vards} ir vaditaja vards")
         sheet.spreadsheet.batch_update(mainit_krasu(self.vaditaja_vards, 182, 215, 168))
 
 # Mainīgā līnija
@@ -622,11 +625,20 @@ def mainiga_linija(current_day, current_month):
     linijas_shunas = get_list_of_all_cells_from_range(f"{range_[index]}:{get_RandC_indexes(range_[index]).xo}{int(get_RandC_indexes(range_[index]).ox) + len(sabatskolas_vaditaji)}")
     linija = Line(linijas_shunas)
     return linija
-  
+
+def delete_previouse_mainiga_linija(linija_objekts):
+    for o in linija_objekts.cells:
+        sheet.spreadsheet.batch_update(mainit_krasu(o, 255, 255, 255))
+    sheet.spreadsheet.batch_update(mainit_krasu(linija_objekts.locationX, 255, 255, 255))
+    sheet.spreadsheet.batch_update(mainit_krasu(linija_objekts.datums, 233, 242, 250))
+    sheet.spreadsheet.batch_update(mainit_krasu(linija_objekts.vaditaja_vards, 233, 242, 250))
+    
 
 
-clear_all()
-tabula()
-mainiga_linija(day, month).colorize()
 
+#clear_all()
+#tabula()
+moving_line = mainiga_linija(day, month)
+#moving_line.colorize()
+delete_previouse_mainiga_linija(moving_line)
 
