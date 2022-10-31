@@ -7,6 +7,11 @@ scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/aut
 creds = ServiceAccountCredentials.from_json_keyfile_name("creds.json", scope)
 client = gspread.authorize(creds)
 sheet = client.open("Sabatskolas grafiks").sheet1
+pagajusa_ceturksna_dati = {
+    "gads" : 2022,
+    "ceturksnis" : 4,
+    "seciba" : ["Luīze", "Uldis", "Justs", "Māris", "Sindija", "Henrijs", "Luīze", "Māris", "Justs", "Uldis", "Henrijs", "Sindija", "Luīze"]
+}
 # Ceturkņi, lai noteiktu kurš ir aktuālais ceturksnis
 ceturkshni = {
     "1" : ["Janvāris", "Februāris", "Marts"],
@@ -416,6 +421,7 @@ class Vaditaji:
     def __init__(self, vards, epasts):
         self.vards = vards
         self.epasts = epasts
+        self.cell_representation = "T10"
 sabatskolas_vaditaji = []
 vaditajs1 = Vaditaji("Luīze", "@")
 vaditajs2 = Vaditaji("Māris", "@")
@@ -431,6 +437,10 @@ sabatskolas_vaditaji.append(vaditajs4)
 sabatskolas_vaditaji.append(vaditajs5)
 sabatskolas_vaditaji.append(vaditajs6)
 sabatskolas_vaditaji.append(vaditajs7)
+y = 0
+while y < len(sabatskolas_vaditaji):
+    sabatskolas_vaditaji[y].cell_representation = f"A{y + 4}:B{y + 4}"
+    y += 1
 # Mēneša klase
 class Menesis:
     def __init__(self, name, all_days):
@@ -633,12 +643,25 @@ def delete_previouse_mainiga_linija(linija_objekts):
     sheet.spreadsheet.batch_update(mainit_krasu(linija_objekts.datums, 233, 242, 250))
     sheet.spreadsheet.batch_update(mainit_krasu(linija_objekts.vaditaja_vards, 233, 242, 250))
     
-
-
-
+def ievadit_datus():
+    collonas = 2 #jo C no kura sākas datu ievade ir 2 alphabeta
+    print(f"{pagajusa_ceturksna_dati['gads']} == {year}")
+    print(f'{aktualais_ceturksnis} == {pagajusa_ceturksna_dati["ceturksnis"]}')
+    if pagajusa_ceturksna_dati["gads"] == year and int(aktualais_ceturksnis) == pagajusa_ceturksna_dati["ceturksnis"]:
+        for a in pagajusa_ceturksna_dati["seciba"]:
+            for b in sabatskolas_vaditaji:
+                if a == b.vards:
+                    #print(f"{return_an_key_from_value_of_dictionary(alphabet, collonas).capitalize()}{get_RandC_indexes(b.cell_representation).oxoo} = x")
+                    sheet.update_acell(f"{return_an_key_from_value_of_dictionary(collonas)}{get_RandC_indexes(b.cell_representation).oxoo}")
+                    collonas += 1
+    else:
+        try:
+            print("haha")
+        except:
+            print("Neko darit")
+ievadit_datus()
 #clear_all()
 #tabula()
-moving_line = mainiga_linija(day, month)
+#moving_line = mainiga_linija(day, month)
 #moving_line.colorize()
-delete_previouse_mainiga_linija(moving_line)
-
+#delete_previouse_mainiga_linija(moving_line)
