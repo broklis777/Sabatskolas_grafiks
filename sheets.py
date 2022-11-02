@@ -473,8 +473,10 @@ otraa_menesha_index = 0
 tresha_menesha_index = 0
 # Iegūst datus ko ievadīt calendar bibliotēkā laidabūtu sarakstus, ko iedot mēnešu klasei
 for menesis_key in meneshi:
+    print(menesis_key)
     if menesis_key == current_menesis:
         pirma_menesha_index = meneshi[menesis_key]
+        print(pirma_menesha_index)
         otraa_menesha_index = meneshi[menesis_key] + 1
         tresha_menesha_index = meneshi[menesis_key] + 2
 # Funkcija kas katrai šūnai ievada tās vērtību
@@ -484,6 +486,8 @@ def enter_values_for_range (values, cells):
         print(f"cells[u] = {cells[u]}, values[u] = {values[u]}")
         sheet.update_acell(cells[u], values[u])
         u += 1
+print(year)
+print(tresha_menesha_index)
 menesis1 = Menesis(ceturkshni[aktualais_ceturksnis][0], calendar.monthcalendar(year, pirma_menesha_index))
 menesis2 = Menesis(ceturkshni[aktualais_ceturksnis][1], calendar.monthcalendar(year, otraa_menesha_index))
 menesis3 = Menesis(ceturkshni[aktualais_ceturksnis][2], calendar.monthcalendar(year, tresha_menesha_index))
@@ -645,23 +649,42 @@ def delete_previouse_mainiga_linija(linija_objekts):
     
 def ievadit_datus():
     collonas = 2 #jo C no kura sākas datu ievade ir 2 alphabeta
-    print(f"{pagajusa_ceturksna_dati['gads']} == {year}")
-    print(f'{aktualais_ceturksnis} == {pagajusa_ceturksna_dati["ceturksnis"]}')
     if pagajusa_ceturksna_dati["gads"] == year and int(aktualais_ceturksnis) == pagajusa_ceturksna_dati["ceturksnis"]:
         for a in pagajusa_ceturksna_dati["seciba"]:
             for b in sabatskolas_vaditaji:
                 if a == b.vards:
-                    #print(f"{return_an_key_from_value_of_dictionary(alphabet, collonas).capitalize()}{get_RandC_indexes(b.cell_representation).oxoo} = x")
-                    sheet.update_acell(f"{return_an_key_from_value_of_dictionary(collonas)}{get_RandC_indexes(b.cell_representation).oxoo}")
+                    print(f"{return_an_key_from_value_of_dictionary(collonas)}{get_RandC_indexes(b.cell_representation).oxoo}")
+                    #sheet.update_acell(f"{return_an_key_from_value_of_dictionary(collonas)}{get_RandC_indexes(b.cell_representation).oxoo}")
                     collonas += 1
     else:
         try:
-            print("haha")
+            start_from = ""
+            if pagajusa_ceturksna_dati["gads"] < year and aktualais_ceturksnis == "1" or int(aktualais_ceturksnis) - 1 == pagajusa_ceturksna_dati["ceturksnis"]:
+                for i in sabatskolas_vaditaji:
+                    if i.vards == pagajusa_ceturksna_dati[len(pagajusa_ceturksna_dati) - 1]:
+                        start_from = i.cell_representation
+            else:
+                start_from = "C4" # Vieta kas ir pati pirmā pirmajam vadītājam un pirmajam datumam
+            r1 = get_RandC_indexes(start_from).ox
+            r2 = get_RandC_indexes(sabatskolas_vaditaji[len(sabatskolas_vaditaji) - 1].cell_representation).oxoo + 1
+            c1 = 2
+            c2 = menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths + 1
+            while c1 < c2:
+                if r1 < r2:
+                    print(f"{return_an_key_from_value_of_dictionary(c1)}{return_an_key_from_value_of_dictionary(r1)}")
+                else:
+                    r1 = 4 # rindiņas sākas no jauna
+                c1 += 1
+
+
+
+                #while r1 < r2:
+                    #print(f"{return_an_key_from_value_of_dictionary(c1)}{return_an_key_from_value_of_dictionary(r1)}")
+                    #sheet.update_acell(f"{return_an_key_from_value_of_dictionary(c1)}{return_an_key_from_value_of_dictionary(r1)}", "x")
+                    #r1 += 1     
         except:
-            print("Neko darit")
+            sheet.spreadsheet.batch_update(mainit_krasu("T10", 255, 200, 200))
 ievadit_datus()
-#clear_all()
-#tabula()
-#moving_line = mainiga_linija(day, month)
-#moving_line.colorize()
-#delete_previouse_mainiga_linija(moving_line)
+
+
+# Jāsalabo tresha menesha index, tas ka skataas uz current meenesi
