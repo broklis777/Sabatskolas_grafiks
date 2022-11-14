@@ -448,46 +448,12 @@ class Menesis:
         self.all_sabaths = all_sabaths = []
         self.name = name
         self.all_days = all_days
+        self.index = 0
         for i in all_days:
             if i[5] != 0:
                 all_sabaths.append(i[5])
         self.number_of_sabaths = len(all_sabaths)
 
-today = f"{time.localtime().tm_mday}.{time.localtime().tm_mon}.{time.localtime().tm_year}"
-year = time.localtime().tm_year
-month = time.localtime().tm_mon
-day = time.localtime().tm_mday
-print(today)
-# Iegūst aktuālo mēnesi un līdz ar to aktuālo ceturksni
-aktualais_ceturksnis = ""
-current_menesis = ""
-for u in meneshi:
-    if meneshi[u] == month:
-        current_menesis = u
-for j in ceturkshni:
-    for m in ceturkshni[j]:
-        if m == current_menesis:
-            aktualais_ceturksnis = j
-pirma_menesha_index = 0
-otraa_menesha_index = 0
-tresha_menesha_index = 0
-# Iegūst datus ko ievadīt calendar bibliotēkā laidabūtu sarakstus, ko iedot mēnešu klasei
-current_menesha_index = 0
-for menesis_key in meneshi:
-    if menesis_key == current_menesis:
-        current_menesha_index = meneshi[menesis_key]
-if current_menesis == ceturkshni[aktualais_ceturksnis][0]:
-    pirma_menesha_index = pirma_menesha_index
-    otraa_menesha_index = pirma_menesha_index + 1
-    tresha_menesha_index = pirma_menesha_index +2
-elif current_menesis == ceturkshni[aktualais_ceturksnis][1]:
-    pirma_menesha_index = current_menesha_index - 1
-    otraa_menesha_index = current_menesha_index
-    tresha_menesha_index = current_menesha_index + 1
-else:
-    pirma_menesha_index = current_menesha_index - 2
-    otraa_menesha_index = current_menesha_index - 1
-    tresha_menesha_index = current_menesha_index
 
 # Funkcija kas katrai šūnai ievada tās vērtību
 def enter_values_for_range (values, cells):
@@ -496,20 +462,70 @@ def enter_values_for_range (values, cells):
         print(f"cells[u] = {cells[u]}, values[u] = {values[u]}")
         sheet.update_acell(cells[u], values[u])
         u += 1
-print(year)
-print(tresha_menesha_index)
-menesis1 = Menesis(ceturkshni[aktualais_ceturksnis][0], calendar.monthcalendar(year, pirma_menesha_index))
-menesis2 = Menesis(ceturkshni[aktualais_ceturksnis][1], calendar.monthcalendar(year, otraa_menesha_index))
-menesis3 = Menesis(ceturkshni[aktualais_ceturksnis][2], calendar.monthcalendar(year, tresha_menesha_index))
-menesis1.cell_representation = return_range_in_cell_format_rows("C2", menesis1.number_of_sabaths)
-menesis2.cell_representation = return_range_in_cell_format_rows(next_or_previouse_cell_rows(menesis1.cell_representation[3] + menesis1.cell_representation[4], "+1"), menesis2.number_of_sabaths)
-menesis3.cell_representation = return_range_in_cell_format_rows(next_or_previouse_cell_rows(menesis2.cell_representation[3] + menesis2.cell_representation[4], "+1"), menesis3.number_of_sabaths)
 
-# Iegūst mainīgo tabulu, kur tiks ievadītas vērtības
-mainigaa_tabula = alphabet["c"] + menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths
-for u in alphabet:
-    if alphabet[u] == mainigaa_tabula:
-        mainigaa_tabula = f"C2:{u.capitalize()}{3 + len(sabatskolas_vaditaji)}" # Būs jāpiestrādā, kad uztaisīšu labāku funkciju, kas nosaka cik cilvēki vada Sabatskolu
+
+today = f"{time.localtime().tm_mday}.{time.localtime().tm_mon}.{time.localtime().tm_year}"
+year = time.localtime().tm_year
+month = time.localtime().tm_mon
+day = time.localtime().tm_mday
+
+def galvenas_operacijas():
+    # Iegūst aktuālo mēnesi un līdz ar to aktuālo ceturksni
+    global aktualais_ceturksnis
+    global current_menesis
+    aktualais_ceturksnis = ""
+    current_menesis = ""
+
+    for u in meneshi:
+        if meneshi[u] == month:
+            current_menesis = u
+    for j in ceturkshni:
+        for m in ceturkshni[j]:
+            if m == current_menesis:
+                aktualais_ceturksnis = j
+    global pirma_menesha_index
+    global otraa_menesha_index
+    global tresha_menesha_index
+    pirma_menesha_index = 0
+    otraa_menesha_index = 0
+    tresha_menesha_index = 0
+    # Iegūst datus ko ievadīt calendar bibliotēkā laidabūtu sarakstus, ko iedot mēnešu klasei
+    current_menesha_index = 0
+    for menesis_key in meneshi:
+        if menesis_key == current_menesis:
+            current_menesha_index = meneshi[menesis_key]
+    if current_menesis == ceturkshni[aktualais_ceturksnis][0]:
+        pirma_menesha_index = pirma_menesha_index
+        otraa_menesha_index = pirma_menesha_index + 1
+        tresha_menesha_index = pirma_menesha_index +2
+    elif current_menesis == ceturkshni[aktualais_ceturksnis][1]:
+        pirma_menesha_index = current_menesha_index - 1
+        otraa_menesha_index = current_menesha_index
+        tresha_menesha_index = current_menesha_index + 1
+    else:
+        pirma_menesha_index = current_menesha_index - 2
+        otraa_menesha_index = current_menesha_index - 1
+        tresha_menesha_index = current_menesha_index
+    global menesis1
+    global menesis2
+    global menesis3
+    menesis1 = Menesis(ceturkshni[aktualais_ceturksnis][0], calendar.monthcalendar(year, pirma_menesha_index))
+    menesis2 = Menesis(ceturkshni[aktualais_ceturksnis][1], calendar.monthcalendar(year, otraa_menesha_index))
+    menesis3 = Menesis(ceturkshni[aktualais_ceturksnis][2], calendar.monthcalendar(year, tresha_menesha_index))
+    menesis1.cell_representation = return_range_in_cell_format_rows("C2", menesis1.number_of_sabaths)
+    menesis2.cell_representation = return_range_in_cell_format_rows(next_or_previouse_cell_rows(menesis1.cell_representation[3] + menesis1.cell_representation[4], "+1"), menesis2.number_of_sabaths)
+    menesis3.cell_representation = return_range_in_cell_format_rows(next_or_previouse_cell_rows(menesis2.cell_representation[3] + menesis2.cell_representation[4], "+1"), menesis3.number_of_sabaths)
+    menesis1.index = pirma_menesha_index
+    menesis2.index = otraa_menesha_index
+    menesis3.index = tresha_menesha_index
+
+    # Iegūst mainīgo tabulu, kur tiks ievadītas vērtības
+    global mainigaa_tabula
+    mainigaa_tabula = alphabet["c"] + menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths
+    for u in alphabet:
+        if alphabet[u] == mainigaa_tabula:
+            mainigaa_tabula = f"C2:{u.capitalize()}{3 + len(sabatskolas_vaditaji)}" # Būs jāpiestrādā, kad uztaisīšu labāku funkciju, kas nosaka cik cilvēki vada Sabatskolu
+galvenas_operacijas()
 
 # Nodzēst pilnībā visu
 def clear_all():
@@ -642,7 +658,7 @@ def mainiga_linija_function(current_day, current_month):
         range_ = get_list_of_all_cells_from_range(next_row(menesis3.cell_representation))
     for k in sabati: 
         if k < current_day:
-            index = return_index_from_value_of_list(sabati, k)
+            index = return_index_from_value_of_list(sabati, k + 7)
     linijas_shunas = get_list_of_all_cells_from_range(f"{range_[index]}:{get_RandC_indexes(range_[index]).xo}{int(get_RandC_indexes(range_[index]).ox) + len(sabatskolas_vaditaji)}")
     linija = Line(linijas_shunas)
     return linija
@@ -688,5 +704,44 @@ def ievadit_datus():
             r1 += 1
             sheet.update_acell(f"{return_an_key_from_value_of_dictionary(alphabet, c1).capitalize()}{row_input}", "x")
             c1 += 1
+clear_all()
+tabula()
+ievadit_datus()
+mainiga_linija.colorize()
 
-# Kkāda kļūda bija pagājušoreiz palaižot, skatīt grafikā
+def main():
+    year = time.localtime().tm_year
+    month = time.localtime().tm_mon
+    day = time.localtime().tm_mday
+    galvenas_operacijas()
+    if year > pagajusa_ceturksna_dati["gads"] or menesis3.index > month:
+        # Updateot pagajusa cetur. datus JSON
+        clear_all()
+        tabula()
+        start_from = ""
+        for i in sabatskolas_vaditaji:
+            if i.vards == pagajusa_ceturksna_dati["seciba"][len(pagajusa_ceturksna_dati["seciba"]) - 1]:
+                start_from = f"A{int(get_RandC_indexes(i.cell_representation).oxoo) + 1}:B{int(get_RandC_indexes(i.cell_representation).ooox) + 1}"
+        r1 = int(get_RandC_indexes(start_from).oxoo)
+        r2 = int(get_RandC_indexes(sabatskolas_vaditaji[len(sabatskolas_vaditaji) - 1].cell_representation).oxoo) + 1
+        c1 = 2
+        c2 = menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths + 1
+        while c1 < c2:
+            row_input = 0
+            if r1 < r2:
+                row_input = r1
+            else:
+                row_input = 4 # rindiņas sākas no jauna
+                r1 = 4
+            r1 += 1
+            sheet.update_acell(f"{return_an_key_from_value_of_dictionary(alphabet, c1).capitalize()}{row_input}", "x")
+            c1 += 1
+    else:
+        atzimetais_datums = sheet.get_values(mainiga_linija.datums)
+        atzimetais_datums = atzimetais_datums[0]
+        if atzimetais_datums < day:
+            delete_previouse_mainiga_linija(mainiga_linija)
+            mainiga_linija.colorize()
+    time.sleep(3600)
+    main()
+main()
