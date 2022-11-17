@@ -630,8 +630,10 @@ class Line:
         cells.pop(0)
         self.vaditaja_vards = vaditaja_vards = ""
         for h in cells:
+            print(h)
             variable = sheet.get_values(h)
             if len(variable) != 0:
+                print("True")
                 self.locationX = h
         self.vaditaja_vards = f"A{get_RandC_indexes(self.locationX).ox}:B{get_RandC_indexes(self.locationX).ox}"
     def colorize(self):
@@ -676,13 +678,17 @@ mainiga_linija = mainiga_linija_function(day, month)
 def ievadit_datus():
     collonas = 2 #jo C no kura sākas datu ievade ir 2 alphabeta
     if pagajusa_ceturksna_dati["gads"] == year and int(aktualais_ceturksnis) == pagajusa_ceturksna_dati["ceturksnis"]:
-        for a in pagajusa_ceturksna_dati["seciba"]:
-            for b in sabatskolas_vaditaji:
-                if a == b.vards:
-                    #print(f"{return_an_key_from_value_of_dictionary(alphabet, collonas).capitalize()}{get_RandC_indexes(b.cell_representation).oxoo}")
-                    sheet.update_acell(f"{return_an_key_from_value_of_dictionary(alphabet, collonas).capitalize()}{get_RandC_indexes(b.cell_representation).oxoo}", "x")
-                    collonas += 1
+        print("Izpildijās")
+        if menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths == len(pagajusa_ceturksna_dati["seciba"]):
+            #print("Sanāca")
+            for a in pagajusa_ceturksna_dati["seciba"]:
+                for b in sabatskolas_vaditaji:
+                    if a == b.vards:
+                        #print(f"{return_an_key_from_value_of_dictionary(alphabet, collonas).capitalize()}{get_RandC_indexes(b.cell_representation).oxoo}")
+                        sheet.update_acell(f"{return_an_key_from_value_of_dictionary(alphabet, collonas).capitalize()}{get_RandC_indexes(b.cell_representation).oxoo}", "x")
+                        collonas += 1
     else:
+        print("Else variants")
         start_from = ""
         if pagajusa_ceturksna_dati["gads"] < year and aktualais_ceturksnis == "1" or int(aktualais_ceturksnis) - 1 == pagajusa_ceturksna_dati["ceturksnis"]:
             for i in sabatskolas_vaditaji:
@@ -704,41 +710,41 @@ def ievadit_datus():
             r1 += 1
             sheet.update_acell(f"{return_an_key_from_value_of_dictionary(alphabet, c1).capitalize()}{row_input}", "x")
             c1 += 1
-clear_all()
-tabula()
-ievadit_datus()
-mainiga_linija.colorize()
+#clear_all()
+#tabula()
+#ievadit_datus()
+#mainiga_linija.colorize()
 
 def main():
     year = time.localtime().tm_year
     month = time.localtime().tm_mon
     day = time.localtime().tm_mday
     galvenas_operacijas()
-    if year > pagajusa_ceturksna_dati["gads"] or menesis3.index > month:
-        # Updateot pagajusa cetur. datus JSON
+    if year > pagajusa_ceturksna_dati["gads"] or  month > menesis3.index:
+        #print(f"year({year}) > pagajusa_ceturksna_dati['gads']({pagajusa_ceturksna_dati['gads']}) OR menesis3.index({menesis3.index}) > month({month})")
+        print("Tici vai nē")
+        if pagajusa_ceturksna_dati["ceturksnis"] == 4:
+            pagajusa_ceturksna_dati["ceturksnis"] = 1
+            pagajusa_ceturksna_dati["gads"] = pagajusa_ceturksna_dati["gads"] + 1
+            vards = ""
+            for i in mainiga_linija.cells:
+                u = sheet.get_values(i)
+                if len(u) != 0:
+                    vards = u
+            j = 0
+            while j < len(pagajusa_ceturksna_dati["seciba"]):
+                pagajusa_ceturksna_dati["seciba"].pop(j)
+                j += 1
+            pagajusa_ceturksna_dati["seciba"].append(vards)
         clear_all()
         tabula()
-        start_from = ""
-        for i in sabatskolas_vaditaji:
-            if i.vards == pagajusa_ceturksna_dati["seciba"][len(pagajusa_ceturksna_dati["seciba"]) - 1]:
-                start_from = f"A{int(get_RandC_indexes(i.cell_representation).oxoo) + 1}:B{int(get_RandC_indexes(i.cell_representation).ooox) + 1}"
-        r1 = int(get_RandC_indexes(start_from).oxoo)
-        r2 = int(get_RandC_indexes(sabatskolas_vaditaji[len(sabatskolas_vaditaji) - 1].cell_representation).oxoo) + 1
-        c1 = 2
-        c2 = menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths + 1
-        while c1 < c2:
-            row_input = 0
-            if r1 < r2:
-                row_input = r1
-            else:
-                row_input = 4 # rindiņas sākas no jauna
-                r1 = 4
-            r1 += 1
-            sheet.update_acell(f"{return_an_key_from_value_of_dictionary(alphabet, c1).capitalize()}{row_input}", "x")
-            c1 += 1
+        ievadit_datus()
+        mainiga_linija.colorize
     else:
         atzimetais_datums = sheet.get_values(mainiga_linija.datums)
-        atzimetais_datums = atzimetais_datums[0]
+        print(atzimetais_datums)
+        print(atzimetais_datums[0][0])
+        atzimetais_datums = int(atzimetais_datums[0][0])
         if atzimetais_datums < day:
             delete_previouse_mainiga_linija(mainiga_linija)
             mainiga_linija.colorize()
