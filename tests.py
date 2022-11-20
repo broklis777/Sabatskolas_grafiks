@@ -756,7 +756,7 @@ def ievadit_datus():
 
 
 def main():
-    
+    time.sleep(60)
     global day
     global month
     global year
@@ -777,13 +777,17 @@ def main():
     #(f"month is {month}")
     #print(f"Pirmā mēneša index ir {pirma_menesha_index}")
     #print(f"{day}.{month}.{year}")        
-
+    print(f"Diena ir {day}")
     galvenas_operacijas()
     #print(f"Pirmā mēneša index ir {pirma_menesha_index}")
     global mainiga_linija
+    delete_previouse_mainiga_linija(mainiga_linija)
+    mainiga_linija = mainiga_linija_function(day, month)
+    mainiga_linija.colorize()
     if year > pagajusa_ceturksna_dati["gads"] or  month > menesis3.index:
         #print(f"year({year}) > pagajusa_ceturksna_dati['gads']({pagajusa_ceturksna_dati['gads']}) OR menesis3.index({menesis3.index}) > month({month})")
         #print("Tici vai nē")
+        time.sleep(60)
         print(pagajusa_ceturksna_dati)
         print("Updato JSON laikam")
         if pagajusa_ceturksna_dati["ceturksnis"] == 4:
@@ -802,10 +806,22 @@ def main():
             pagajusa_ceturksna_dati["seciba"] = []
             pagajusa_ceturksna_dati["seciba"].append(vards)
         print(pagajusa_ceturksna_dati)
-        #clear_all()
-        #tabula()
-        ievadit_datus()
-        mainiga_linija.colorize
+        try:
+            clear_all()
+            tabula()
+            ievadit_datus()
+            mainiga_linija = mainiga_linija_function(day, month)
+            mainiga_linija.olocrize
+        except:
+            time.sleep(60)
+            clear_all()
+            time.sleep(60)
+            tabula()
+            time.sleep(60)
+            ievadit_datus()
+            time.sleep(60)
+            mainiga_linija = mainiga_linija_function(day, month)
+            mainiga_linija.colorize()
     else:
         atzimetais_datums = sheet.get_values(mainiga_linija.datums)
         print(atzimetais_datums)
@@ -821,10 +837,15 @@ def main():
     #print(f"Year {year}")
     main()
 
-year = 2022
-month = 12
-day = 30
+year = 2023
+month = 2
+day = 12
 galvenas_operacijas()
+clear_all()
+tabula()
+ievadit_datus()
 mainiga_linija = mainiga_linija_function(day, month)
+mainiga_linija.colorize()
+time.sleep(60)
 main()
 
