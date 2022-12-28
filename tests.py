@@ -131,6 +131,8 @@ def get_RandC_indexes(string):
                 start_column_index = alphabet[i]
             elif i == burts1.lower():
                 end_column_index = alphabet[i]
+        if burts == burts1:
+            end_column_index = start_column_index
         vertibas = All_Indexes(start_column_index, end_column_index, start_row_index, end_row_index, burts, cipars, burts1, cipars1)
         return vertibas
 
@@ -483,14 +485,12 @@ def galvenas_operacijas():
     current_menesis = ""
 
     for u in meneshi:
-        print(f"meneshi[u] {meneshi[u]} == month {month}")
         if meneshi[u] == month:
             current_menesis = u
     for j in ceturkshni:
         for m in ceturkshni[j]:
             if m == current_menesis:
                 aktualais_ceturksnis = j
-    print(f"Current menesis ir {current_menesis}")
     global pirma_menesha_index
     global otraa_menesha_index
     global tresha_menesha_index
@@ -502,9 +502,7 @@ def galvenas_operacijas():
     for menesis_key in meneshi:
         if menesis_key == current_menesis:
             current_menesha_index = meneshi[menesis_key]
-            print(f"{current_menesha_index} = {meneshi[menesis_key]}")
     if current_menesis == ceturkshni[aktualais_ceturksnis][0]:
-        print("izpildijās")
         pirma_menesha_index = current_menesha_index
         otraa_menesha_index = pirma_menesha_index + 1
         tresha_menesha_index = pirma_menesha_index +2
@@ -519,7 +517,6 @@ def galvenas_operacijas():
     global menesis1
     global menesis2
     global menesis3
-    print(f"Pirma meneshaaaaa index ir {pirma_menesha_index}")
     menesis1 = Menesis(ceturkshni[aktualais_ceturksnis][0], calendar.monthcalendar(year, pirma_menesha_index))
     menesis2 = Menesis(ceturkshni[aktualais_ceturksnis][1], calendar.monthcalendar(year, otraa_menesha_index))
     menesis3 = Menesis(ceturkshni[aktualais_ceturksnis][2], calendar.monthcalendar(year, tresha_menesha_index))
@@ -540,9 +537,10 @@ def galvenas_operacijas():
 
 # Nodzēst pilnībā visu
 def clear_all():
-    sheet.spreadsheet.batch_update(merge_cells("A1:W30"))
-    sheet.spreadsheet.batch_update(mainit_krasu("A1:W30", 255, 255, 255))
-    sheet.format("A1:W30", {
+    #sheet.spreadsheet.batch_update(unmerge_cells("A1:Z150"))
+    sheet.spreadsheet.batch_update(merge_cells("A1:Z150"))
+    sheet.spreadsheet.batch_update(mainit_krasu("A1:Z150", 255, 255, 255))
+    sheet.format("A1:Z150", {
         "horizontalAlignment": "CENTER",
         "textFormat": {
         "foregroundColor": {
@@ -553,8 +551,8 @@ def clear_all():
         "fontSize": 10,
         "bold": False
     }})
-    sheet.spreadsheet.batch_update(add_borders("A1:W30", "-"))
-    sheet.spreadsheet.batch_update(unmerge_cells("A1:W30"))
+    sheet.spreadsheet.batch_update(add_borders("A1:Z150", "-"))
+    sheet.spreadsheet.batch_update(unmerge_cells("A1:Z150"))
     sheet.clear()
 
 #Darbibas ar tabulu
@@ -641,10 +639,8 @@ class Line:
         cells.pop(0)
         self.vaditaja_vards = vaditaja_vards = ""
         for h in cells:
-            #print(h)
             variable = sheet.get_values(h)
             if len(variable) != 0:
-                #print("True")
                 self.locationX = h
         self.vaditaja_vards = f"A{get_RandC_indexes(self.locationX).ox}:B{get_RandC_indexes(self.locationX).ox}"
     def colorize(self):
@@ -697,13 +693,10 @@ def delete_previouse_mainiga_linija(linija_objekts):
 def ievadit_datus():
     collonas = 2 #jo C no kura sākas datu ievade ir 2 alphabeta
     if pagajusa_ceturksna_dati["gads"] == year and int(aktualais_ceturksnis) == pagajusa_ceturksna_dati["ceturksnis"]:
-        print("Izpildijās")
         if menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths == len(pagajusa_ceturksna_dati["seciba"]):
-            print("Sanāca")
             for a in pagajusa_ceturksna_dati["seciba"]:
                 for b in sabatskolas_vaditaji:
                     if a == b.vards:
-                        #print(f"{return_an_key_from_value_of_dictionary(alphabet, collonas).capitalize()}{get_RandC_indexes(b.cell_representation).oxoo}")
                         sheet.update_acell(f"{return_an_key_from_value_of_dictionary(alphabet, collonas).capitalize()}{get_RandC_indexes(b.cell_representation).oxoo}", "x")
                         collonas += 1
         else:
@@ -726,7 +719,6 @@ def ievadit_datus():
                 sheet.update_acell(f"{return_an_key_from_value_of_dictionary(alphabet, c1).capitalize()}{row_input}", "x")
                 c1 += 1
     else:
-        #print("Else variants")
         start_from = ""
         if pagajusa_ceturksna_dati["gads"] < year and aktualais_ceturksnis == "1" or int(aktualais_ceturksnis) - 1 == pagajusa_ceturksna_dati["ceturksnis"]:
             for i in sabatskolas_vaditaji:
@@ -737,7 +729,7 @@ def ievadit_datus():
         r1 = int(get_RandC_indexes(start_from).oxoo)
         r2 = int(get_RandC_indexes(sabatskolas_vaditaji[len(sabatskolas_vaditaji) - 1].cell_representation).oxoo) + 1
         c1 = 2
-        c2 = menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths + 1
+        c2 = menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths + 2 # Pilnībā nav ne jausmas kāpēc jāpieskaita 2 nevis 1
         while c1 < c2:
             row_input = 0
             if r1 < r2:
@@ -748,12 +740,37 @@ def ievadit_datus():
             r1 += 1
             sheet.update_acell(f"{return_an_key_from_value_of_dictionary(alphabet, c1).capitalize()}{row_input}", "x")
             c1 += 1
-#clear_all()
-#tabula()
-#ievadit_datus()
-#mainiga_linija.colorize()
+def low_restart(day, month):
+    print("Low restart")
+    time.sleep(60)
+    clear_all()
+    time.sleep(60)
+    tabula()
+    time.sleep(60)
+    ievadit_datus()
+    time.sleep(60)
+    mainiga_linija = mainiga_linija_function(day, month)
+    mainiga_linija.colorize()
 
+def long_restart(day, month):
+    print("Long restart")
+    time.sleep(120)
+    clear_all()
+    time.sleep(120)
+    tabula()
+    time.sleep(120)
+    ievadit_datus()
+    time.sleep(120)
+    mainiga_linija = mainiga_linija_function(day, month)
+    mainiga_linija.colorize()
+    time.sleep(120)
 
+def create_new():
+    clear_all()
+    tabula()
+    ievadit_datus()
+    mainiga_linija = mainiga_linija_function(day, month)
+    mainiga_linija.colorize()
 
 def main():
     time.sleep(60)
@@ -762,90 +779,120 @@ def main():
     global year
     
     if month != 12:
-        if day != 29:
-            day +=1
+        if day < 29:
+            day += 3
         else:
             day = 1
-            month = 1
+            month += 1
     else:
-        if day < 29:
-            day += 1
+        if day < 28:
+            day += 3
         else:
             month = 1
             day = 1
             year += 1
-    #(f"month is {month}")
-    #print(f"Pirmā mēneša index ir {pirma_menesha_index}")
-    #print(f"{day}.{month}.{year}")        
     print(f"Diena ir {day}")
     galvenas_operacijas()
-    #print(f"Pirmā mēneša index ir {pirma_menesha_index}")
     global mainiga_linija
-    delete_previouse_mainiga_linija(mainiga_linija)
-    mainiga_linija = mainiga_linija_function(day, month)
-    mainiga_linija.colorize()
-    if year > pagajusa_ceturksna_dati["gads"] or  month > menesis3.index:
-        #print(f"year({year}) > pagajusa_ceturksna_dati['gads']({pagajusa_ceturksna_dati['gads']}) OR menesis3.index({menesis3.index}) > month({month})")
-        #print("Tici vai nē")
+    if menesis3.all_sabaths[len(menesis3.all_sabaths) - 2] < day:
+        #Extra stabiņš tabulas beigās
         time.sleep(60)
+        stabins_burts = 2 + menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths
+        for m in alphabet:
+            if stabins_burts == alphabet[m]:
+                stabins_burts = m
+        stabins = f"{stabins_burts.capitalize()}2:{stabins_burts.capitalize()}{3 + len(sabatskolas_vaditaji)}" # pilnībā nav ne jausmas kapēc 3 nevis 2
+        zils1 = f"{stabins_burts.capitalize()}2"
+        zils2 = f"{stabins_burts.capitalize()}3"
+        dienas_saraksts = menesis3.all_days
+        dienas = 0
+        for nedela in dienas_saraksts:
+            for diena in nedela:
+                if diena != 0:
+                    dienas += 1
+        datums4 = menesis3.all_sabaths[len(menesis3.all_sabaths) - 1] + 7
+        datums4 = datums4 - dienas
+        sheet.spreadsheet.batch_update(colums_lenth_change(42, stabins))
+        sheet.spreadsheet.batch_update(add_borders(stabins, "+"))
+        sheet.spreadsheet.batch_update(add_borders(zils1, "+"))
+        sheet.spreadsheet.batch_update(add_borders(zils2, "+"))
+        sheet.spreadsheet.batch_update(mainit_krasu(zils1, 233, 242, 250))
+        sheet.spreadsheet.batch_update(mainit_krasu(zils2, 233, 242, 250))
+        sheet.update_acell(zils1, ">")
+        sheet.update_acell(zils2, datums4)
+        try:
+            previouse_col = 0
+            for letter in alphabet:
+                if letter == stabins_burts.lower():
+                    previouse_col = alphabet[letter] - 1
+            for lett in alphabet:
+                if alphabet[lett] == previouse_col:
+                    previouse_col = lett
+            previouse_vaditajs = f"{previouse_col}{int(get_RandC_indexes(stabins).oxoo) + 2}:{previouse_col}{get_RandC_indexes(stabins).ooox}"
+            previouse_vaditajs = get_list_of_all_cells_from_range(previouse_vaditajs)
+            previouse_index = 0 
+            cellx = ""
+            for shuna in previouse_vaditajs:
+                isx = sheet.get_values(shuna)
+                if len(isx) != 0:
+                    break
+                previouse_index += 1
+            stabins = get_list_of_all_cells_from_range(stabins)
+            if previouse_index == len(previouse_vaditajs) - 1:
+                cellx = stabins[3]
+            else:
+                cellx = stabins[3 + previouse_index]
+            sheet.update_acell(cellx, "x")
+        except:
+            print("Problēma ar datu ievadi extra stabiņā! ")
+    if year > pagajusa_ceturksna_dati["gads"] or  month > menesis3.index:
+        galvenas_operacijas()
+        #time.sleep(60)
         print(pagajusa_ceturksna_dati)
         print("Updato JSON laikam")
-        if pagajusa_ceturksna_dati["ceturksnis"] == 4:
+        if pagajusa_ceturksna_dati["ceturksnis"] != 4 and pagajusa_ceturksna_dati["gads"] == year:
+            pagajusa_ceturksna_dati["ceturksnis"] += 1
+        else:
             pagajusa_ceturksna_dati["ceturksnis"] = 1
-            pagajusa_ceturksna_dati["gads"] = pagajusa_ceturksna_dati["gads"] + 1
-            vards = ""
-            #for i in mainiga_linija.cells:
-                #u = sheet.get_values(i)
-                #if len(u) != 0:
-                    #vards = u
-            vards = pagajusa_ceturksna_dati["seciba"][len(pagajusa_ceturksna_dati["seciba"]) - 1]
-            #j = 0
-            #while j < len(pagajusa_ceturksna_dati["seciba"]):
-                #pagajusa_ceturksna_dati["seciba"].pop(j)
-                #j += 1
-            pagajusa_ceturksna_dati["seciba"] = []
-            pagajusa_ceturksna_dati["seciba"].append(vards)
+            pagajusa_ceturksna_dati["gads"] += 1 #time.localtime().tm_year()
+        vards = ""
+        vards = pagajusa_ceturksna_dati["seciba"][len(pagajusa_ceturksna_dati["seciba"]) - 1]
+        pagajusa_ceturksna_dati["seciba"] = []
+        pagajusa_ceturksna_dati["seciba"].append(vards)
+        d = 1
+        for a in meneshi:
+            if meneshi[a] == month:
+                for b in ceturkshni:
+                    for c in ceturkshni[b]:
+                        if c == a:
+                            d += 1
+                            pagajusa_ceturksna_dati["ceturksnis"] = d
         print(pagajusa_ceturksna_dati)
         try:
-            clear_all()
-            tabula()
-            ievadit_datus()
-            mainiga_linija = mainiga_linija_function(day, month)
-            mainiga_linija.olocrize
+            create_new()
         except:
-            time.sleep(60)
-            clear_all()
-            time.sleep(60)
-            tabula()
-            time.sleep(60)
-            ievadit_datus()
-            time.sleep(60)
-            mainiga_linija = mainiga_linija_function(day, month)
-            mainiga_linija.colorize()
+            try:
+                low_restart(day, month)
+            except:
+                long_restart(day, month)
     else:
-        atzimetais_datums = sheet.get_values(mainiga_linija.datums)
-        print(atzimetais_datums)
-        print(atzimetais_datums[0][0])
-        atzimetais_datums = int(atzimetais_datums[0][0])
-        if atzimetais_datums < day:
-            delete_previouse_mainiga_linija(mainiga_linija)
-            mainiga_linija = mainiga_linija_function(day, month)
-            mainiga_linija.colorize()
+        galvenas_operacijas()
+        delete_previouse_mainiga_linija(mainiga_linija)
+        mainiga_linija = mainiga_linija_function(day, month)
+        mainiga_linija.colorize()
     time.sleep(60)
-    #print(f"Day {day}")
-    #print(f"Month {month}")
-    #print(f"Year {year}")
     main()
-
 year = 2023
-month = 2
-day = 12
+month = 5
+day = 24
 galvenas_operacijas()
-clear_all()
-tabula()
-ievadit_datus()
 mainiga_linija = mainiga_linija_function(day, month)
-mainiga_linija.colorize()
+try:
+    create_new()
+except:
+    low_restart(day, month)
 time.sleep(60)
 main()
 
+
+# Jauztaisa lai pēdējais vadītājs labāk rādītos
