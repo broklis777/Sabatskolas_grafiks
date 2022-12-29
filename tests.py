@@ -194,7 +194,7 @@ def colums_lenth_change(pixle_size, range):
                     "range" : {
                         "dimension" : "COLUMNS",
                         "startIndex" : get_RandC_indexes(range).start_column_index,
-                        "endIndex" : get_RandC_indexes(range).end_column_index
+                        "endIndex" : get_RandC_indexes(range).end_column_index + 1
                     },
                     "properties" : {
                         "pixelSize" : pixle_size
@@ -772,11 +772,16 @@ def create_new():
     mainiga_linija = mainiga_linija_function(day, month)
     mainiga_linija.colorize()
 
+
+
+
 def main():
     time.sleep(60)
     global day
     global month
     global year
+    global extra_stabins
+    extra_stabins = False
     
     if month != 12:
         if day < 29:
@@ -792,73 +797,87 @@ def main():
             day = 1
             year += 1
     print(f"Diena ir {day}")
-    galvenas_operacijas()
-    global mainiga_linija
-    if menesis3.all_sabaths[len(menesis3.all_sabaths) - 2] < day:
-        #Extra stabiņš tabulas beigās
-        time.sleep(60)
-        stabins_burts = 2 + menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths
-        for m in alphabet:
-            if stabins_burts == alphabet[m]:
-                stabins_burts = m
-        stabins = f"{stabins_burts.capitalize()}2:{stabins_burts.capitalize()}{3 + len(sabatskolas_vaditaji)}" # pilnībā nav ne jausmas kapēc 3 nevis 2
-        zils1 = f"{stabins_burts.capitalize()}2"
-        zils2 = f"{stabins_burts.capitalize()}3"
-        dienas_saraksts = menesis3.all_days
-        dienas = 0
-        for nedela in dienas_saraksts:
-            for diena in nedela:
-                if diena != 0:
-                    dienas += 1
-        datums4 = menesis3.all_sabaths[len(menesis3.all_sabaths) - 1] + 7
-        datums4 = datums4 - dienas
-        sheet.spreadsheet.batch_update(colums_lenth_change(42, stabins))
-        sheet.spreadsheet.batch_update(add_borders(stabins, "+"))
-        sheet.spreadsheet.batch_update(add_borders(zils1, "+"))
-        sheet.spreadsheet.batch_update(add_borders(zils2, "+"))
-        sheet.spreadsheet.batch_update(mainit_krasu(zils1, 233, 242, 250))
-        sheet.spreadsheet.batch_update(mainit_krasu(zils2, 233, 242, 250))
-        sheet.update_acell(zils1, ">")
-        sheet.update_acell(zils2, datums4)
-        try:
-            previouse_col = 0
-            for letter in alphabet:
-                if letter == stabins_burts.lower():
-                    previouse_col = alphabet[letter] - 1
-            for lett in alphabet:
-                if alphabet[lett] == previouse_col:
-                    previouse_col = lett
-            previouse_vaditajs = f"{previouse_col}{int(get_RandC_indexes(stabins).oxoo) + 2}:{previouse_col}{get_RandC_indexes(stabins).ooox}"
-            previouse_vaditajs = get_list_of_all_cells_from_range(previouse_vaditajs)
-            previouse_index = 0 
-            cellx = ""
-            for shuna in previouse_vaditajs:
-                isx = sheet.get_values(shuna)
-                if len(isx) != 0:
-                    break
-                previouse_index += 1
-            stabins = get_list_of_all_cells_from_range(stabins)
-            if previouse_index == len(previouse_vaditajs) - 1:
-                cellx = stabins[3]
-            else:
-                cellx = stabins[3 + previouse_index]
-            sheet.update_acell(cellx, "x")
-        except:
-            print("Problēma ar datu ievadi extra stabiņā! ")
-    if year > pagajusa_ceturksna_dati["gads"] or  month > menesis3.index:
+    if menesis3.index < month or menesis3.index == 12 and month == 1:
         galvenas_operacijas()
-        #time.sleep(60)
-        print(pagajusa_ceturksna_dati)
+        create_new()
+    else:
+        galvenas_operacijas()
+    global mainiga_linija
+    if month == menesis3.index:
+        if menesis3.all_sabaths[len(menesis3.all_sabaths) - 2] < day:
+            if extra_stabins == False:
+                #Extra stabiņš tabulas beigās
+                time.sleep(60)
+                stabins_burts = 2 + menesis1.number_of_sabaths + menesis2.number_of_sabaths + menesis3.number_of_sabaths
+                for m in alphabet:
+                    if stabins_burts == alphabet[m]:
+                        stabins_burts = m
+                stabins = f"{stabins_burts.capitalize()}2:{stabins_burts.capitalize()}{3 + len(sabatskolas_vaditaji)}" # pilnībā nav ne jausmas kapēc 3 nevis 2
+                zils1 = f"{stabins_burts.capitalize()}2"
+                zils2 = f"{stabins_burts.capitalize()}3"
+                dienas_saraksts = menesis3.all_days
+                dienas = 0
+                for nedela in dienas_saraksts:
+                    for diena in nedela:
+                        if diena != 0:
+                            dienas += 1
+                datums4 = menesis3.all_sabaths[len(menesis3.all_sabaths) - 1] + 7
+                datums4 = datums4 - dienas
+                sheet.spreadsheet.batch_update(colums_lenth_change(42, stabins))
+                sheet.spreadsheet.batch_update(add_borders(stabins, "+"))
+                sheet.spreadsheet.batch_update(add_borders(zils1, "+"))
+                sheet.spreadsheet.batch_update(add_borders(zils2, "+"))
+                sheet.spreadsheet.batch_update(mainit_krasu(zils1, 233, 242, 250))
+                sheet.spreadsheet.batch_update(mainit_krasu(zils2, 233, 242, 250))
+                sheet.update_acell(zils1, ">")
+                sheet.update_acell(zils2, datums4)
+                try:
+                    previouse_col = 0
+                    for letter in alphabet:
+                        if letter == stabins_burts.lower():
+                            previouse_col = alphabet[letter] - 1
+                    for lett in alphabet:
+                        if alphabet[lett] == previouse_col:
+                            previouse_col = lett
+                    previouse_vaditajs = f"{previouse_col}{int(get_RandC_indexes(stabins).oxoo) + 2}:{previouse_col}{get_RandC_indexes(stabins).ooox}"
+                    previouse_vaditajs = get_list_of_all_cells_from_range(previouse_vaditajs)
+                    previouse_index = 0 
+                    cellx = ""
+                    for shuna in previouse_vaditajs:
+                        isx = sheet.get_values(shuna)
+                        if len(isx) != 0:
+                            break
+                        previouse_index += 1
+                    stabins = get_list_of_all_cells_from_range(stabins)
+                    if previouse_index == len(previouse_vaditajs) - 1:
+                        cellx = stabins[3]
+                    else:
+                        cellx = stabins[3 + previouse_index]
+                    sheet.update_acell(cellx, "x")
+                except:
+                    print("Problēma ar datu ievadi extra stabiņā! ")
+                extra_stabins = True
+    if year > pagajusa_ceturksna_dati["gads"] or  month > menesis3.index:
+        extra_stabins = False
+        galvenas_operacijas()
         print("Updato JSON laikam")
+        time.sleep(60)
+        print(pagajusa_ceturksna_dati)
         if pagajusa_ceturksna_dati["ceturksnis"] != 4 and pagajusa_ceturksna_dati["gads"] == year:
             pagajusa_ceturksna_dati["ceturksnis"] += 1
         else:
             pagajusa_ceturksna_dati["ceturksnis"] = 1
             pagajusa_ceturksna_dati["gads"] += 1 #time.localtime().tm_year()
-        vards = ""
-        vards = pagajusa_ceturksna_dati["seciba"][len(pagajusa_ceturksna_dati["seciba"]) - 1]
-        pagajusa_ceturksna_dati["seciba"] = []
-        pagajusa_ceturksna_dati["seciba"].append(vards)
+        for shuna in previouse_vaditajs:
+            isx = sheet.get_values(shuna)
+            if len(isx) != 0:
+                print(pagajusa_ceturksna_dati["seciba"])
+                print(len(pagajusa_ceturksna_dati["seciba"]))
+                pagajusa_ceturksna_dati["seciba"] = []
+                vaditajs = f"A{get_RandC_indexes(shuna).ox}:B{get_RandC_indexes(shuna).ox}"
+                vaditajs = sheet.get_values(vaditajs)
+                if len(vaditajs) != 0:
+                    pagajusa_ceturksna_dati["seciba"].append(vaditajs[0][0])
         d = 1
         for a in meneshi:
             if meneshi[a] == month:
@@ -876,7 +895,7 @@ def main():
             except:
                 long_restart(day, month)
     else:
-        galvenas_operacijas()
+        #galvenas_operacijas()
         delete_previouse_mainiga_linija(mainiga_linija)
         mainiga_linija = mainiga_linija_function(day, month)
         mainiga_linija.colorize()
@@ -887,12 +906,17 @@ month = 5
 day = 24
 galvenas_operacijas()
 mainiga_linija = mainiga_linija_function(day, month)
+
+
+
+
+
+
+
+
 try:
     create_new()
 except:
     low_restart(day, month)
 time.sleep(60)
 main()
-
-
-# Jauztaisa lai pēdējais vadītājs labāk rādītos
