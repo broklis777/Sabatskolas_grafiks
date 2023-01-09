@@ -1,8 +1,31 @@
-from datetime import date
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import calendar
 import time
+import os
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+CLIENT_FILE = "client_secret.json"
+SCOPES = ["https://www.googleapis.com/auth/calendar"]
+creds = None
+if os.path.exists("token.json"):
+    creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+if not creds or not creds.valid:
+    if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+    else:
+        flow = InstalledAppFlow.from_client_secrets_file(CLIENT_FILE, SCOPES)
+        creds = flow.run_local_server(port=0)
+    with open("token.json", "w") as token:
+        token.write(creds.to_json())
+try:
+    service = build('calendar', 'v3', credentials=creds)
+    calendar0 = service.calendars().get(calendarId='primary').execute()
+except HttpError as err:
+    print(err)
 scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_name("creds.json", scope)
 client = gspread.authorize(creds)
@@ -361,6 +384,32 @@ def change_text_color(range_in_cell_represantation, red, green, blue):
     }
     return body
 
+# Funkcija, kas uzaicina dalībnieku attiecīgajā datumā uz notikumu kalendārā, citiem vārdiem sakot, pirmdienās atgādinās, ka jāgatavojas vadīt Sabatskolu Sabatā
+
+def send_reminder(email:str, yearYYYY:str, monthMM:str, dayDD:str, hourHH:str, minutesMM:str):
+    dateTime1 = f"{yearYYYY}-{monthMM}-{dayDD}T{int(hourHH) - 2}:{minutesMM}:00-00:00"  # Nez kapec, bet ir jaliek divas h pirms
+    dateTime2 = f"{yearYYYY}-{monthMM}-{dayDD}T{int(hourHH) - 1}:{minutesMM}:00-00:00"
+    event = {
+        'summary': 'Jāvada Sabatskola',
+        'location': '19 Pērkona iela, Sigulda, Sigulda Municipality',
+        'description': 'Šo Sabat tev ir jāvada sabatskola... :)',
+        'start': {
+            'dateTime': dateTime1, 
+            'timeZone': 'Europe/Riga',
+        },
+        'end': {
+            'dateTime': dateTime2,
+            'timeZone': 'Europe/Riga',
+        },
+        'attendees': [
+            {'email': email},
+        ],
+        'reminders': {
+            'useDefault': True,
+        },
+    }
+    event = service.events().insert(calendarId='primary', body=event).execute()
+
 def next_or_previouse_cell_rows(cell, plus_or_minuse_one):
     letter = ""
     if plus_or_minuse_one[0] == "+":
@@ -386,12 +435,6 @@ def return_an_key_from_value_of_dictionary(dictionary, value):
 def return_index_from_value_of_list(list, value):
     index = 0
     for i in list:
-        #print(f"list is {list}")
-        #print(f"value is {value}")
-        #if i == value:
-            #print(f"i == value     {i} == {value}     and index is {index}")
-        #if i == 26 and value == 26:
-            #print("nu vo")
         if int(i) == int(value) or str(i) == str(value):
             return index
         index += 1
@@ -467,7 +510,6 @@ class Menesis:
 def enter_values_for_range (values, cells):
     u = 0
     while u < len(values):
-        #print(f"cells[u] = {cells[u]}, values[u] = {values[u]}")
         sheet.update_acell(cells[u], values[u])
         u += 1
 
@@ -537,7 +579,6 @@ def galvenas_operacijas():
 
 # Nodzēst pilnībā visu
 def clear_all():
-    #sheet.spreadsheet.batch_update(unmerge_cells("A1:Z150"))
     sheet.spreadsheet.batch_update(merge_cells("A1:Z150"))
     sheet.spreadsheet.batch_update(mainit_krasu("A1:Z150", 255, 255, 255))
     sheet.format("A1:Z150", {
@@ -635,20 +676,33 @@ class Line:
     def __init__(self, cells):
         self.locationX = locationX = "T10" # Mazums gadās kļūda
         self.cells = cells
-        self.datums = cells[0]
+        self.datums_shuna = cells[0]
         cells.pop(0)
-        self.vaditaja_vards = vaditaja_vards = ""
+        self.vaditaja_vards_shuna = vaditaja_vards_shuna = ""
         for h in cells:
             variable = sheet.get_values(h)
             if len(variable) != 0:
                 self.locationX = h
-        self.vaditaja_vards = f"A{get_RandC_indexes(self.locationX).ox}:B{get_RandC_indexes(self.locationX).ox}"
+        self.vaditaja_vards_shuna = f"A{get_RandC_indexes(self.locationX).ox}:B{get_RandC_indexes(self.locationX).ox}"
+        self.vaditaja_vards = sheet.get_values(self.vaditaja_vards_shuna)
+        self.datums = sheet.get_values(self.datums_shuna)
+        try:
+            self.vaditaja_vards = self.vaditaja_vards[0][0]
+            self.datums = self.datums[0][0]
+        except:
+            self.vaditaja_vards = self.vaditaja_vards[0]
+            self.datums = self.datums[0]
+        self.datums = int(self.datums)
+        self.vaditaja_epasts = ""
+        for vad in sabatskolas_vaditaji:
+            if vad.vards == self.vaditaja_vards:
+                self.vaditaja_epasts = vad.epasts
     def colorize(self):
         for o in self.cells:
             sheet.spreadsheet.batch_update(mainit_krasu(o, 217, 234, 211))
         sheet.spreadsheet.batch_update(mainit_krasu(self.locationX, 182, 215, 168))
-        sheet.spreadsheet.batch_update(mainit_krasu(self.datums, 182, 215, 168))
-        sheet.spreadsheet.batch_update(mainit_krasu(self.vaditaja_vards, 182, 215, 168))
+        sheet.spreadsheet.batch_update(mainit_krasu(self.datums_shuna, 182, 215, 168))
+        sheet.spreadsheet.batch_update(mainit_krasu(self.vaditaja_vards_shuna, 182, 215, 168))
 
 # Mainīgā līnija
 def mainiga_linija_function(current_day, current_month):
@@ -686,9 +740,8 @@ def delete_previouse_mainiga_linija(linija_objekts):
     for o in linija_objekts.cells:
         sheet.spreadsheet.batch_update(mainit_krasu(o, 255, 255, 255))
     sheet.spreadsheet.batch_update(mainit_krasu(linija_objekts.locationX, 255, 255, 255))
-    sheet.spreadsheet.batch_update(mainit_krasu(linija_objekts.datums, 233, 242, 250))
-    sheet.spreadsheet.batch_update(mainit_krasu(linija_objekts.vaditaja_vards, 233, 242, 250))
-
+    sheet.spreadsheet.batch_update(mainit_krasu(linija_objekts.datums_shuna, 233, 242, 250))
+    sheet.spreadsheet.batch_update(mainit_krasu(linija_objekts.vaditaja_vards_shuna, 233, 242, 250))
 
 def ievadit_datus():
     collonas = 2 #jo C no kura sākas datu ievade ir 2 alphabeta
@@ -772,17 +825,13 @@ def create_new():
     mainiga_linija = mainiga_linija_function(day, month)
     mainiga_linija.colorize()
 
-
-
-
 def main():
     time.sleep(60)
     global day
     global month
     global year
-    global extra_stabins
-    extra_stabins = False
-    
+    if reminder_day != day:
+        reminder_set = False
     if month != 12:
         if day < 29:
             day += 3
@@ -895,23 +944,25 @@ def main():
             except:
                 long_restart(day, month)
     else:
-        #galvenas_operacijas()
         delete_previouse_mainiga_linija(mainiga_linija)
         mainiga_linija = mainiga_linija_function(day, month)
         mainiga_linija.colorize()
+    if mainiga_linija.datums - 5 == day:
+        if reminder_set == False:
+            send_reminder(mainiga_linija.vaditaja_epasts, year, month, day, 17, 30)
+            reminder_set = True
+            reminder_day = day
     time.sleep(60)
     main()
+reminder_set = False
+reminder_day = 0
+extra_stabins = False
 year = 2023
 month = 5
 day = 24
+
 galvenas_operacijas()
 mainiga_linija = mainiga_linija_function(day, month)
-
-
-
-
-
-
 
 
 try:
