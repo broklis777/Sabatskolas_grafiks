@@ -500,11 +500,18 @@ class Menesis:
         self.name = name
         self.all_days = all_days
         self.nuber_of_days = all_days
-        for d in range(0, len(self.nuber_of_days)):
+        all_days_list = []
+        for week in self.nuber_of_days:
+            for day in week:
+                all_days_list.append(day)
+        diena = 0
+        while diena < len(all_days_list):
             try:
-                self.nuber_of_days.remove(0)
+                all_days_list.remove(0)
             except:
                 pass
+            diena += 1
+        self.nuber_of_days = len(all_days_list)
         self.index = 0
         for i in all_days:
             if i[5] != 0:
@@ -872,7 +879,14 @@ def create_new():
     mainiga_linija = mainiga_linija_function(day, month)
     mainiga_linija.colorize(0)
 
-def main():
+reminder_set = False
+reminder_day = 0
+extra_stabins = False
+year = 2023
+month = 5
+day = 24
+
+def main(reminder_set0):
     time.sleep(60)
     global day
     global month
@@ -1003,26 +1017,30 @@ def main():
     else:
         delete_previouse_mainiga_linija(mainiga_linija)
         mainiga_linija = mainiga_linija_function(day, month)
-        mainiga_linija.colorize()
+        mainiga_linija.colorize(0)
     def remind_function():
-        if reminder_set == False:
+        if reminder_set0 == False:
             send_reminder(mainiga_linija.vaditaja_epasts, year, month, day, 17, 30)
             reminder_set = True
             reminder_day = day
+    
     if mainiga_linija.datums - 5 == day:
         remind_function()
-    if mainiga_linija.datums + menesis2.all_days 
+    if current_menesis.lower() == menesis1.name.lower():
+        if day == menesis1.all_sabaths[len(menesis1.all_sabaths) - 1] + 2:
+            remind_function()
+    if current_menesis.lower() == menesis2.name.lower():
+        if day == menesis2.all_sabaths[len(menesis2.all_sabaths) - 1] + 2:
+            remind_function()
+    if current_menesis.lower() == menesis3.name.lower():
+        if day == menesis3.all_sabaths[len(menesis3.all_sabaths) - 1] + 2:
+            remind_function()
     time.sleep(60)
-    main()
-reminder_set = False
-reminder_day = 0
-extra_stabins = False
-year = 2023
-month = 5
-day = 24
+    main(reminder_set)
+
 
 galvenas_operacijas()
-sheet
+print(menesis1.nuber_of_days)
 
 try:
     create_new()
@@ -1037,6 +1055,4 @@ except:
             time.sleep(60)
 mainiga_linija = mainiga_linija_function(day, month)
 time.sleep(60)
-main()
-
-# Uztaisīt lai starp divu atšķirīgu mēnešu sabatiem pirmdienā tiek atgādināts
+main(reminder_set)
